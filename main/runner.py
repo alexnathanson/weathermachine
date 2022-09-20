@@ -42,13 +42,11 @@ import os
 import pandas as pd
 import logging
 import serial #for serial communication with  Arduino via USB
+import time #just for testing purposes, can be removed later
 
 dataDirectory = './data/cleaned/'
 
 myColumn = 'Global Horizontal Radiation {Wh/m2}'
-
-#vertical = 90
-facadeAngle = 90
 
 #cardinal direction in degrees - east = 90, south = 180, west = 270, north = 0
 azimuth = 180
@@ -127,8 +125,34 @@ def runLoop(dF):
 
 		dataIndex = dataIndex + 1
 
+	print('')
 	print('*** FINISHED *** ')
+	print('')
 
+def printProgressBar(iteration, total =100, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+	"""
+	src: https://stackoverflow.com/questions/3173320/text-progress-bar-in-terminal-with-block-characters
+
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+
+    #prefix = "Progress"
+	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+	filledLength = int(length * iteration // total)
+	bar = fill * filledLength + '-' * (length - filledLength)
+	print(f'\r{prefix} |{bar}| {iteration}% {suffix}', end = printEnd)
+	
+	if iteration == 100:
+		print()
 
 '''
 if tScale is a float or int it just scales the time by minutes
@@ -138,18 +162,28 @@ if tScale is a string options are:
 '''
 def runAll(tScale):
 
-	if tScale.isnumeric() or checkFloat(tScale):
+	print('')
+	print("*** Running Weather Machine ***")
+	print("modules: Lights")
+	print("wall azimuth: " + str(azimuth) + " degrees")
+	print("time scale: " + str(tScale))
+	print('')
+
+	if str(tScale).isnumeric() or checkFloat(tScale):
 		print('t scale is float or int')
 	elif type(tScale) == str:
 		print('t scale is str')
-
-	print("tScale: " + str(tScale))
 
 	allData = importData()
 	singleColumn = getColumn(allData,myColumn)
 
 	print(getColumn(allData,myColumn).iloc[3:10])
 	print(surfaceOrientationConversion(singleColumn).iloc[3:10])
+
+	#for testing
+	for i in range(100):
+		printProgressBar(i+1) 
+		time.sleep(1)
 
 if __name__ == '__main__':
 	runAll(2)
