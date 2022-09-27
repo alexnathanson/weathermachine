@@ -41,8 +41,10 @@ import csv
 import os
 import pandas as pd
 import logging
-import serial #for serial communication with  Arduino via USB
-import time #just for testing purposes, can be removed later
+import time
+import arduinoSerial #this is the code for communicating with an Arduino via serial
+from WeatherMachineLights import WMLights as Lights	
+
 
 dataDirectory = './data/cleaned/'
 
@@ -68,38 +70,8 @@ def importData():
 	
 	return df
 
-def getColumn(dF, mC):
-	return dF[mC]
-
-#convert Wh/m2 to Lux
-def energyToLux():
-	print("energy to lux converion")
-
-'''
-convert from horizontal point to a particular vertical face
-
-rough conversion of light intensity for different azimuths
-east (90) = 75%
-south (180) = 100%
-west (270) = 75%
-north (0) = 10%
-'''
-def surfaceOrientationConversion(dFC):
-	print("surface conversion")
-
-	#azimuth conversation
-	if azimuth == 0: #north
-		azScaler = .1
-	elif azimuth == 90: #east
-		azScaler = .75
-	elif azimuth == 180: #south
-		azScaler = 1.0
-	elif azimuth == 270: #west
-		azScaler = .75
-
-	convertedColumn = dFC * azScaler
-
-	return convertedColumn
+def mergeTwoColumns(c1, c2):
+	return pd.merge(c1,c2,left_index=True,right_index=True)
 
 #check if this is a float or not
 def checkFloat(toCheck):
@@ -129,7 +101,9 @@ def runLoop(dF):
 	print('*** FINISHED *** ')
 	print('')
 
-def printProgressBar(iteration, total =100, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+#prints a progress bar on the console
+#note that the terminal window needs to be wide enough to fit all text otherwise it will look wierd
+def printProgressBar(iteration, total, prefix = 'Progress', suffix = 'Complete', suffix2 = 'Min Remaining', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
 	"""
 	src: https://stackoverflow.com/questions/3173320/text-progress-bar-in-terminal-with-block-characters
 
@@ -149,7 +123,8 @@ def printProgressBar(iteration, total =100, prefix = 'Progress', suffix = 'Compl
 	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
 	filledLength = int(length * iteration // total)
 	bar = fill * filledLength + '-' * (length - filledLength)
-	print(f'\r{prefix} |{bar}| {iteration}% {suffix}', end = printEnd)
+	estMin = total - iteration
+	print(f'\r{prefix} |{bar}| {iteration}% {suffix} {estMin} {suffix2}', end = printEnd)
 	
 	if iteration == 100:
 		print()
@@ -159,7 +134,26 @@ if tScale is a float or int it just scales the time by minutes
 if tScale is a string options are:
 	rt = real time running
 	minute = hours converted to minutes
+	seconds = hours converted to seconds
 '''
+def setTimeScale(tScale):
+	if str(tScale).isnumeric() or checkFloat(tScale):
+		print('t scale is float or int')
+	elif type(tScale) == str:
+		print('t scale is str')
+		if tScale == 'rT':
+			tScale = 1
+		elif tScale == 'minute':
+			tScale = 60
+		elif tScale == 'seconds':
+			tScale = 60 * 60
+		else:
+			tScale = 1
+
+	print("new time scale: " + str(tScale))
+
+	return tScale
+
 def runAll(tScale):
 
 	print('')
@@ -169,20 +163,38 @@ def runAll(tScale):
 	print("time scale: " + str(tScale))
 	print('')
 
-	if str(tScale).isnumeric() or checkFloat(tScale):
-		print('t scale is float or int')
-	elif type(tScale) == str:
-		print('t scale is str')
+	#instantiate the light class
+	lights = Lights(azimuth)
 
+	tScale = setTimeScale(tScale)
+
+	#get all the data in a dataframe
 	allData = importData()
-	singleColumn = getColumn(allData,myColumn)
 
-	print(getColumn(allData,myColumn).iloc[3:10])
-	print(surfaceOrientationConversion(singleColumn).iloc[3:10])
+	#get the column of data we want
+	mCData = allData[myColumn]
+	#convert the data to the proper surface
+	mCDataToSurface = lights.surfaceOrientationConversion(mCData)
+	#convert from energy to lux
+	mCDataToLux = lights.energyToLux(mCData)
 
-	#for testing
-	for i in range(100):
-		printProgressBar(i+1) 
+	#merge our converted data + with time stamp column into 1 dataframe
+	outputColumns = mergeTwoColumns(mCDataToLux,allData["HH:MM"])
+	print("Output:")
+	print(outputColumns.iloc[3:10])
+
+	# WILL THE DATA ALWAYS BE IN THIS FORMAT i.e. 1 row per hour?
+	print(outputColumns['HH:MM'].head())
+	print(len(outputColumns))
+
+
+	dFLen = len(outputColumns)
+	for i in range(dFLen):
+		#if you print anything after the progress bar it will get messed up
+		printProgressBar(round((i+1)/dFLen,2),dFLen) 
+		#run next data
+
+		#this is in seconds
 		time.sleep(1)
 
 if __name__ == '__main__':
