@@ -42,9 +42,9 @@ import os
 import pandas as pd
 import logging
 import time
-import arduinoSerial #this is the code for communicating with an Arduino via serial
+from arduinoSerial import ArduinoSerial as Arduino #this is the code for communicating with an Arduino via serial
 from WeatherMachineLights import WMLights as Lights	
-
+import math
 
 dataDirectory = './data/cleaned/'
 
@@ -166,6 +166,9 @@ def runAll(tScale):
 	#instantiate the light class
 	lights = Lights(azimuth)
 
+	#instantiate Arduino communication class
+	arduino = Arduino('COM7')
+
 	tScale = setTimeScale(tScale)
 
 	#get all the data in a dataframe
@@ -177,25 +180,28 @@ def runAll(tScale):
 	mCDataToSurface = lights.surfaceOrientationConversion(mCData)
 	#convert from energy to lux
 	mCDataToLux = lights.energyToLux(mCData)
+	print(mCDataToLux.iloc[3:10])
+
+
+	mCLuxToArduino = lights.convertToArduinoAnalogOutput(mCDataToLux, 120000)
 
 	#merge our converted data + with time stamp column into 1 dataframe
-	outputColumns = mergeTwoColumns(mCDataToLux,allData["HH:MM"])
+	outputColumns = mergeTwoColumns(mCLuxToArduino,allData["HH:MM"])
 	print("Output:")
 	print(outputColumns.iloc[3:10])
 
-	# WILL THE DATA ALWAYS BE IN THIS FORMAT i.e. 1 row per hour?
-	print(outputColumns['HH:MM'].head())
-	print(len(outputColumns))
+	# dFLen = len(outputColumns)
+	# for i in range(dFLen):
+	# 	#if you print anything after the progress bar it will get messed up
+	# 	#printProgressBar(round((i+1)/dFLen,2),dFLen) 
+	# 	#run next data
+	# 	lB = int(outputColumns['lux'][i])
+	# 	print("Sending: " + str(lB))
+	# 	#arduino.sendByte(str(255).encode())
+	# 	arduino.sendByte(str(lB).encode())
 
-
-	dFLen = len(outputColumns)
-	for i in range(dFLen):
-		#if you print anything after the progress bar it will get messed up
-		printProgressBar(round((i+1)/dFLen,2),dFLen) 
-		#run next data
-
-		#this is in seconds
-		time.sleep(1)
+	#  	#this is in seconds
+	# 	time.sleep(1)
 
 if __name__ == '__main__':
 	runAll(2)
