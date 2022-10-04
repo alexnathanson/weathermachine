@@ -14,9 +14,8 @@
 
 */
 
-const int ledPin = 13; // the pin that the LED is attached to
-int incomingByte;      // a variable to read incoming serial data into
-char TextToSend[] = " Hello From Arduino Uno";
+const int ledPin = 9; // the pin that the LED is attached to
+char sendHello[] = " Hello From Arduino Uno";
 char dataConfirmed[] = "Arduino got data";
 
 void setup() {
@@ -25,24 +24,20 @@ void setup() {
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
 
-  
-  Serial.println(TextToSend); // sends a \n with text
+  Serial.println(sendHello); // sends a \n with text
 }
 
 void loop() {
-  byte brightness;
-    //analogWrite(ledPin, incomingByte);
-  //Serial.println(dataConfirmed); // sends a \n with text
+  int brightness;
 
   // check if data has been sent from the computer:
   if (Serial.available() > 0) {
     // read the most recent byte (which will be from 0 to 255):
-    brightness = Serial.read();
-    //Serial.println(dataConfirmed); // sends a \n with text
-    //incomingByte = 255;
+    brightness = Serial.parseInt();
+    Serial.println(brightness); // sends a \n with text
     // set the brightness of the LED:
-    digitalWrite(ledPin, brightness);
+    analogWrite(ledPin, brightness);
   }
 
-  delay(10);
+  //delay(10);
 }

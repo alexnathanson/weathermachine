@@ -16,6 +16,7 @@ class WMLights:
 
 	Note that a more accurate number could probably be used with a precise understanding of the LED light wavelengths
 	'''
+	# returns a series
 	def energyToLux(self, ser):
 		print("energy to lux converion: 1W/m^2 = 120lx")
 
@@ -31,7 +32,7 @@ class WMLights:
 		return dF['lux']
 
 	'''
-	convert from horizontal point to a particular vertical face
+	roughly convert from horizontal point to a particular vertical face
 
 	rough conversion of light intensity for different azimuths
 	east (90) = 75%
@@ -39,7 +40,7 @@ class WMLights:
 	west (270) = 75%
 	north (0) = 10%
 	'''
-	def surfaceOrientationConversion(self, dFC):
+	def roughSurfaceOrientationConversion(self, dFC):
 
 		#azimuth conversation
 		if self.azimuth == 0: #north
@@ -56,7 +57,43 @@ class WMLights:
 
 		return convertedColumn
 
-	#map data frame value to 0 to 255
+
+	'''
+	detailed conversion from horizontal point to a particular vertical face
+	equations from Youngjin Hwang
+	https://docs.google.com/document/d/11sM10-iicSdTeooRDKgKW0v6Aa3aOrDD/edit?usp=sharing&ouid=114681549877036963956&rtpof=true&sd=true
+	'''
+	# def detailedSurfaceOrientation(self):
+	# 	if self.azimuth == 0: #north
+	# 		#θ’n = arcsin (sin δ cos ϕ − cos δ sin ϕ cos ω) 
+
+	# 		#Therefore, hourly total solar irradiation on the wall is:
+	# 		#0.5*HGloHor*0.2 + 0.5*DifHor + HDirNor*cos(θ’n)
+
+	# 	elif self.azimuth == 90: #east
+	# 		azScaler = .75
+	# 	elif self.azimuth == 180: #south
+	# 		azScaler = 1.0
+	# 	elif self.azimuth == 270: #west
+	# 		azScaler = .75
+	# 	print("surface conversion scaler: " + str(azScaler))
+
+	# 	convertedColumn = dFC * azScaler
+
+	# 	return convertedColumn
+
+	# δ = -0.4092cos(2π/365*(d+10)), where d is the day of year (such that d= 1 on Jan 1)
+	def declinationAngle(self, dayNum):
+		return -0.4092 * math.cos(2* math.pi/365*(dayNum+10))
+
+	# ω = π/12*(t-12), where t is the local solar time in hours
+	def solarHour(self, sTime):
+		return math.pi/12*(sTime-12)
+
+	'''
+	map data frame value to 0 to 255
+	returns a series
+	'''
 	def convertToArduinoAnalogOutput(self,dFC, ledLuxMax):
 		convertedColumn = dFC / ledLuxMax
 
@@ -68,16 +105,11 @@ class WMLights:
 		#convertedColumnF = self.seriesFloor(convertedColumnA)
 
 		#int conversation should probably happen here
-		return convertedColumnA
+		return self.seriesFloor(convertedColumnA)
 
 
-	# concatinate series to ints - NOT REALLY WORKING YET
+	# concatinate series of floats to ints
 	def seriesFloor(self, aSeries):
-
-		print("series floor")
-
-		#print(aSeries.iloc[10])
-		#print(math.floor(aSeries.iloc[10]))
 
 		aSeriesL = []
 
@@ -85,6 +117,5 @@ class WMLights:
 			aSeriesL.append(math.floor(aSeries.iloc[i]))
 
 		aSeriesF = pd.Series(aSeriesL, name=aSeries.name)
-	
-		#print(aSeriesF.head())
-		aSeriesF = pd.Series()
+
+		return aSeriesF

@@ -154,6 +154,10 @@ def setTimeScale(tScale):
 
 	return tScale
 
+# def printDfReport(aDF):
+# 	print(aDF.columns.values)
+# 	print(aDF.iloc[0:10])
+
 def runAll(tScale):
 
 	print('')
@@ -169,6 +173,7 @@ def runAll(tScale):
 	#instantiate Arduino communication class
 	arduino = Arduino('COM7')
 
+	#rate that data is sent - currently not being used
 	tScale = setTimeScale(tScale)
 
 	#get all the data in a dataframe
@@ -176,32 +181,35 @@ def runAll(tScale):
 
 	#get the column of data we want
 	mCData = allData[myColumn]
+	#print(mCData.iloc[0:10])
+
+	#create lights dataframe
+	initData = {'HH:MM': allData["HH:MM"],myColumn:mCData}
+	dfLights = pd.DataFrame(initData)
+	
 	#convert the data to the proper surface
-	mCDataToSurface = lights.surfaceOrientationConversion(mCData)
+	dfLights['surface conversion'] = lights.roughSurfaceOrientationConversion(mCData)
+
 	#convert from energy to lux
-	mCDataToLux = lights.energyToLux(mCData)
-	print(mCDataToLux.iloc[3:10])
+	dfLights['lux'] = lights.energyToLux(dfLights['surface conversion'])
 
+	#map lux to arduino analog range (0 to 255)
+	dfLights['ard'] = lights.convertToArduinoAnalogOutput(dfLights['lux'], 120000)
 
-	mCLuxToArduino = lights.convertToArduinoAnalogOutput(mCDataToLux, 120000)
-
-	#merge our converted data + with time stamp column into 1 dataframe
-	outputColumns = mergeTwoColumns(mCLuxToArduino,allData["HH:MM"])
 	print("Output:")
-	print(outputColumns.iloc[3:10])
+	print(dfLights.iloc[0:10])
 
-	# dFLen = len(outputColumns)
-	# for i in range(dFLen):
-	# 	#if you print anything after the progress bar it will get messed up
-	# 	#printProgressBar(round((i+1)/dFLen,2),dFLen) 
-	# 	#run next data
-	# 	lB = int(outputColumns['lux'][i])
-	# 	print("Sending: " + str(lB))
-	# 	#arduino.sendByte(str(255).encode())
-	# 	arduino.sendByte(str(lB).encode())
+	dFLen = len(dfLights)
+	for i in range(dFLen):
+		#if you print anything after the progress bar it will get messed up
+		#printProgressBar(round((i+1)/dFLen,2),dFLen) 
 
-	#  	#this is in seconds
-	# 	time.sleep(1)
+		lB = dfLights['ard'][i]
+		print("Sending: " + str(lB))
+		arduino.sendByte(str(lB).encode())
+
+	 	#this is in seconds
+		time.sleep(1)
 
 if __name__ == '__main__':
 	runAll(2)
