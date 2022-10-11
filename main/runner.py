@@ -48,7 +48,8 @@ import math
 
 dataDirectory = './data/cleaned/'
 
-myColumn = 'Global Horizontal Radiation {Wh/m2}'
+# columns needed for light calculations:
+lightCols = ['Date', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
 
 #cardinal direction in degrees - east = 90, south = 180, west = 270, north = 0
 azimuth = 180
@@ -158,6 +159,38 @@ def setTimeScale(tScale):
 # 	print(aDF.columns.values)
 # 	print(aDF.iloc[0:10])
 
+def runLights(lData):
+	print("running lights")
+
+	print(lData.head())
+
+	#instantiate the light class
+	lights = Lights(azimuth)
+
+	#print(cList)
+
+	#create lights dataframe
+	initData = {'Date':lData['Date'],'HH:MM': lData["HH:MM"]}#,lData.columns[0]:mCData
+	dfLights = pd.DataFrame(initData)
+	print(dfLights.head())
+
+	#convert the data to the proper surface
+	#get the column of data we want
+#	mCData = lData.iloc[:,2]
+#	print(mCData.iloc[0:10])
+#s	dfLights['surface conversion'] = lights.roughSurfaceOrientationConversion(mCData)
+
+	dfLights['surface irradiance'] = lights.detailedSurfaceOrientation(lData)
+
+	#convert from energy to lux
+	dfLights['lux'] = lights.energyToLux(dfLights['surface irradiance'])
+
+	#map lux to arduino analog range (0 to 255)
+	dfLights['ard'] = lights.convertToArduinoAnalogOutput(dfLights['lux'], 120000)
+	print(dfLights.iloc[0:10])
+
+	return dfLights
+
 def runAll(tScale):
 
 	print('')
@@ -167,8 +200,7 @@ def runAll(tScale):
 	print("time scale: " + str(tScale))
 	print('')
 
-	#instantiate the light class
-	lights = Lights(azimuth)
+	
 
 	#instantiate Arduino communication class
 	arduino = Arduino('COM7')
@@ -179,37 +211,25 @@ def runAll(tScale):
 	#get all the data in a dataframe
 	allData = importData()
 
-	#get the column of data we want
-	mCData = allData[myColumn]
-	#print(mCData.iloc[0:10])
-
-	#create lights dataframe
-	initData = {'HH:MM': allData["HH:MM"],myColumn:mCData}
-	dfLights = pd.DataFrame(initData)
-	
-	#convert the data to the proper surface
-	dfLights['surface conversion'] = lights.roughSurfaceOrientationConversion(mCData)
-
-	#convert from energy to lux
-	dfLights['lux'] = lights.energyToLux(dfLights['surface conversion'])
-
-	#map lux to arduino analog range (0 to 255)
-	dfLights['ard'] = lights.convertToArduinoAnalogOutput(dfLights['lux'], 120000)
+	###### LIGHTS ######
+	dfLights = runLights(allData[lightCols])
+	print(dfLights.head())
+	#### TO DO! ####s
+	#Generate Gradients
 
 	print("Output:")
-	print(dfLights.iloc[0:10])
 
-	dFLen = len(dfLights)
-	for i in range(dFLen):
-		#if you print anything after the progress bar it will get messed up
-		#printProgressBar(round((i+1)/dFLen,2),dFLen) 
+	# dFLen = len(dfLights)
+	# for i in range(dFLen):
+	# 	#if you print anything after the progress bar it will get messed up
+	# 	#printProgressBar(round((i+1)/dFLen,2),dFLen) 
 
-		lB = dfLights['ard'][i]
-		print("Sending: " + str(lB))
-		arduino.sendByte(str(lB).encode())
+	# 	lB = dfLights['ard'][i]
+	# 	print("Sending: " + str(lB))
+	# 	arduino.sendByte(str(lB).encode())
 
-	 	#this is in seconds
-		time.sleep(1)
+	#  	#this is in seconds
+	# 	time.sleep(1)
 
 if __name__ == '__main__':
 	runAll(2)
