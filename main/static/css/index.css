@@ -1,3 +1,18 @@
 body {
 	background: lightgreen;
 }
+
+
+#test-settings{
+	border-style: solid;
+	float: left;
+	width: auto;
+	padding: 10px;
+	margin-right: 10px;
+}
+
+#run-info{
+	border-style: solid;
+	float: left;
+	padding: 10px;
+}

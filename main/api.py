@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request
 from flask_cors import CORS, cross_origin
+import threading
 import json
+import webbrowser
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -17,41 +20,53 @@ userInput = {"load":
 
 print("Starting Flask server...")
 
+threading.Timer(1.25, lambda: openBrowser() ).start()
+
+def openBrowser():
+      webbrowser.open_new("http://127.0.0.1:5000")
+
 @app.route('/')
 def main():
    return render_template('index.html')
 
-@app.route('/api', methods=['POST', 'GET'])
-def api():
-    if request.method == 'POST':
-        postJSON = request.get_json()
-        #print(postJSON)
-        global systemData
-        systemData = postJSON
-        #print(systemData)
-        return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
-    elif request.method == 'GET':
 
-        if "user" in request.args.get('data'):
-            response = userInput
-        elif "system" in request.args.get('data'):
-            response = systemData
-
+@app.route('/options', methods=['GET'])
+def options():
+    if "files" in request.args.get('options'):
+        response = os.listdir('data/cleaned')
         return response
 
-#this route is for all user inputs
-@app.route('/input', methods=['POST'])
-def input():
-    if request.method == 'POST':
-        postJSON = request.get_json()
+# @app.route('/api', methods=['POST', 'GET'])
+# def api():
+#     if request.method == 'POST':
+#         postJSON = request.get_json()
+#         #print(postJSON)
+#         global systemData
+#         systemData = postJSON
+#         #print(systemData)
+#         return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+#     elif request.method == 'GET':
 
-        # parsePost = postJSON.split(":")
+#         if "user" in request.args.get('data'):
+#             response = userInput
+#         elif "system" in request.args.get('data'):
+#             response = systemData
 
-        print(postJSON)
-        global userInput
-        userInput['load']['branch' + str(postJSON['branch'])]['status'] = postJSON['status']
-        print(userInput)
-        return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+#         return response
+
+# #this route is for all user inputs
+# @app.route('/input', methods=['POST'])
+# def input():
+#     if request.method == 'POST':
+#         postJSON = request.get_json()
+
+#         # parsePost = postJSON.split(":")
+
+#         print(postJSON)
+#         global userInput
+#         userInput['load']['branch' + str(postJSON['branch'])]['status'] = postJSON['status']
+#         print(userInput)
+#         return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 
 if __name__ == '__main__':
  	

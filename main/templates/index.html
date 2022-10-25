@@ -10,28 +10,69 @@
 
 <h1>Weather Machine</h1>
 
-<h2>Test Specs</h2>
+<div id="test-settings">
+    <h2>Test Settings</h2>
 
-<h3>Choose files</h3>
+    <form action="">
+        <label for="files">Choose source file:</label><br>
+        <select id="files" name="files">
+        </select>
 
-<h3>Facade</h3>
-<button type="button" class="facade-button" id="north" onclick="setFacade(north)">North</button> 
-<button type="button" class="facade-button" id="east" onclick="setFacade(east)">East</button> 
-<button type="button" class="facade-button" id="south" onclick="setFacade(south)">South</button> 
-<button type="button" class="facade-button" id="west" onclick="setFacade(west)">West</button> 
-<button type="button" class="facade-button" id="roof" onclick="setFacade(roof)">Roof</button> 
+        <p>Facade:</p>
+
+        <input type="radio" id="north" name="facade" value="north">
+        <label for="north">north</label><br>
+
+        <input type="radio" id="east" name="facade" value="east">
+        <label for="east">east</label><br>
+
+        <input type="radio" id="south" name="facade" value="south">
+        <label for="south">south</label><br>
+
+        <input type="radio" id="west" name="facade" value="west">
+        <label for="west">west</label><br>
+
+        <!--  <input type="radio" id="roof" name="facade" value="roof">
+        <label for="roof">roof</label><br> -->
+
+        <p>Time Scale:</p>
 
 
-<h3>Time Scale</h3>
-<div id="timescale"></div>
+        <input type="radio" id="rt" name="time" value="rt">
+        <label for="rt">real time</label><br>
 
-<button type="button" id="run-button" onclick="runProgram()">Run Program</button> 
+        <input type="radio" id="1s" name="time" value="1s">
+        <label for="1s">1 hour = 1 second</label><br>
+
+        <input type="radio" id="custom" name="time" value="custom">
+        <label for="custom">custom</label>
+        <input type="text" id="custom-time" name="custom-time" value=""><br>
+
+        <p>Components:</p>
+        <input type="checkbox" id="lights" name="lights" value="lights" checked>
+        <label for="lights">lights</label><br>
+
+        <!-- <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
+        <label for="vehicle2"> I have a car</label><br>
+        <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
+        <label for="vehicle3"> I have a boat</label><br>  -->
+
+        <p>
+          <input type="submit" value="Run Program">
+        </p>
+
+    </form>
+</div>
 
 
+<div id="run-info">
+    <h2>Run Info</h2>
+    <span id="percent">Percent complete:</span><br>
+    <span id="time-ellapsed">Ellapsed time:</span><br>
+    <span id="time-remaining">Time remaining:</span><br>
 
-<h2>Run Info</h2>
-
-<h3>Graph</h3>
+    <h3>Graph</h3>
+</div>
 
  <script src="static/js/index.js"></script> 
 
