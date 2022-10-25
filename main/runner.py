@@ -45,6 +45,8 @@ import time
 from arduinoSerial import ArduinoSerial as Arduino #this is the code for communicating with an Arduino via serial
 from WeatherMachineLights import WMLights as Lights	
 import math
+import sys
+import api
 
 dataDirectory = './data/cleaned/'
 
@@ -52,7 +54,13 @@ dataDirectory = './data/cleaned/'
 lightCols = ['Date', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
 
 #cardinal direction in degrees - east = 90, south = 180, west = 270, north = 0
-azimuth = 180
+azimuth = 90
+
+devMode = False
+
+# if len(sys.argv) > 1 and sys.argv[1].find('dev'):
+# 	print(sys.argv[1].split("="))
+
 
 def importData():
 
@@ -193,6 +201,8 @@ def runLights(lData):
 
 def runAll(tScale):
 
+	api.app.run()
+
 	print('')
 	print("*** Running Weather Machine ***")
 	print("modules: Lights")
@@ -203,7 +213,7 @@ def runAll(tScale):
 	
 
 	#instantiate Arduino communication class
-	arduino = Arduino('COM7')
+	#arduino = Arduino('COM7')
 
 	#rate that data is sent - currently not being used
 	tScale = setTimeScale(tScale)
@@ -213,9 +223,7 @@ def runAll(tScale):
 
 	###### LIGHTS ######
 	dfLights = runLights(allData[lightCols])
-	print(dfLights.head())
-	#### TO DO! ####s
-	#Generate Gradients
+	#print(dfLights.head())
 
 	print("Output:")
 
