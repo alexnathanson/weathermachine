@@ -1,71 +1,31 @@
-'''
-clean data is defined here as data with 1 single row of headers.
-it does not necessarily mean there aren't problems in the data
-
-HEADERS:
-Date
-HH:MM
-Datasource
-Dry Bulb Temperature {C}
-Dew Point Temperature {C}
-Relative Humidity {%}
-Atmospheric Pressure {Pa}
-Extraterrestrial Horizontal Radiation {Wh/m2}
-Extraterrestrial Direct Normal Radiation {Wh/m2}
-Horizontal Infrared Radiation Intensity from Sky {Wh/m2}
-Global Horizontal Radiation {Wh/m2}
-Direct Normal Radiation {Wh/m2}
-Diffuse Horizontal Radiation {Wh/m2}
-Global Horizontal Illuminance {lux}
-Direct Normal Illuminance {lux}
-Diffuse Horizontal Illuminance {lux}
-Zenith Luminance {Cd/m2}
-Wind Direction {deg}
-Wind Speed {m/s}
-Total Sky Cover {.1}
-Opaque Sky Cover {.1}
-Visibility {km}
-Ceiling Height {m}
-Present Weather Observation
-Present Weather Codes
-Precipitable Water {mm}
-Aerosol Optical Depth {.001}
-Snow Depth {cm}
-Days Since Last Snow
-Albedo {.01}
-Liquid Precipitation Depth {mm}
-Liquid Precipitation Quantity {hr}
-'''
-
 import csv
 import os
 import pandas as pd
 import logging
 import time
+from datetime import datetime
 from arduinoSerial import ArduinoSerial as Arduino #this is the code for communicating with an Arduino via serial
 from WeatherMachineLights import WMLights as Lights	
 import math
 import sys
 import api
+from threading import Thread
+from queue import Queue
+from _thread import interrupt_main
+import requests
+import json
 
 dataDirectory = './data/cleaned/'
 
-# columns needed for light calculations:
-lightCols = ['Date', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
-
-#cardinal direction in degrees - east = 90, south = 180, west = 270, north = 0
-azimuth = 90
-
 devMode = False
 
-# if len(sys.argv) > 1 and sys.argv[1].find('dev'):
-# 	print(sys.argv[1].split("="))
+#arduino = object
 
+#import date from the file specified via the browser
+def importData(dataFileName):
 
-def importData():
-
-	dirList = os.listdir(dataDirectory)
-	fileName = dataDirectory + dirList[0]
+	# dirList = os.listdir(dataDirectory)
+	fileName = dataDirectory + dataFileName
 
 	print("importing data from " + fileName)
 
@@ -76,7 +36,7 @@ def importData():
 	except IOError:
 		print('failed to import ' + fileName)
 		logging.exception('')
-	
+		raise SystemExit(1)
 	return df
 
 def mergeTwoColumns(c1, c2):
@@ -112,21 +72,7 @@ def runLoop(dF):
 
 #prints a progress bar on the console
 #note that the terminal window needs to be wide enough to fit all text otherwise it will look wierd
-def printProgressBar(iteration, total, prefix = 'Progress', suffix = 'Complete', suffix2 = 'Min Remaining', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-	"""
-	src: https://stackoverflow.com/questions/3173320/text-progress-bar-in-terminal-with-block-characters
-
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-    """
+def progressBar(iteration, total, prefix = 'Progress', suffix = 'Complete', suffix2 = 'Min Remaining', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
 
     #prefix = "Progress"
 	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
@@ -162,15 +108,11 @@ def setTimeScale(tScale):
 	print("new time scale: " + str(tScale))
 
 	return tScale
-
-# def printDfReport(aDF):
-# 	print(aDF.columns.values)
-# 	print(aDF.iloc[0:10])
-
-def runLights(lData):
+	
+def runLights(lData, azimuth):
 	print("running lights")
 
-	print(lData.head())
+	#print(lData.head())
 
 	#instantiate the light class
 	lights = Lights(azimuth)
@@ -180,7 +122,7 @@ def runLights(lData):
 	#create lights dataframe
 	initData = {'Date':lData['Date'],'HH:MM': lData["HH:MM"]}#,lData.columns[0]:mCData
 	dfLights = pd.DataFrame(initData)
-	print(dfLights.head())
+	#print(dfLights.head())
 
 	#convert the data to the proper surface
 	#get the column of data we want
@@ -195,49 +137,151 @@ def runLights(lData):
 
 	#map lux to arduino analog range (0 to 255)
 	dfLights['ard'] = lights.convertToArduinoAnalogOutput(dfLights['lux'], 120000)
-	print(dfLights.iloc[0:10])
+	#print(dfLights.iloc[0:10])
 
 	return dfLights
 
-def runAll(tScale):
+def apiThread(outQ):
+	#start API
+	api.app.run()	
 
-	api.app.run()
+def runMachine():
+	global arduino
 
 	print('')
 	print("*** Running Weather Machine ***")
-	print("modules: Lights")
-	print("wall azimuth: " + str(azimuth) + " degrees")
-	print("time scale: " + str(tScale))
+	
+	# print("wall azimuth: " + str(azimuth) + " degrees")
+	# print("time scale: " + str(tScale))
+	print("Arduino port: " + api.runSettings['port'])
+	dataFile = api.runSettings['file'] + ".csv"
+	print("Data file: " + dataFile)
+	print("Facade: " + api.runSettings['facade'])
+
+	#convert cardinal direction to azimuths
+	if api.runSettings['facade'] == 'north':
+		az = 0
+	elif api.runSettings['facade'] == 'east':
+		az = 90
+	elif api.runSettings['facade'] == 'south':
+		az = 180
+	elif api.runSettings['facade'] == 'west':
+		az = 270
+
+	print("Timescale: " + api.runSettings['time'])
+	
+	components=''
+	if api.runSettings['light'] == 'true':
+		components = components + "lights "
+
+	if components == '':
+		components = 'none'
+
+	print("Components: " + components)
 	print('')
 
-	
-
-	#instantiate Arduino communication class
-	#arduino = Arduino('COM7')
+	try:
+		#global arduino
+		arduino = Arduino(api.runSettings['port'])
+	except Exception as e:
+		print(e)
+		#interrupt_main()
+		raise SystemExit(1)
 
 	#rate that data is sent - currently not being used
-	tScale = setTimeScale(tScale)
+	#tScale = setTimeScale(tScale)
 
 	#get all the data in a dataframe
-	allData = importData()
+	allData = importData(dataFile)
 
 	###### LIGHTS ######
-	dfLights = runLights(allData[lightCols])
-	#print(dfLights.head())
+	if api.runSettings['light'] == 'true':
+		# columns needed for light calculations:
+		lightCols = ['Date', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
+		dfLights = runLights(allData[lightCols], az)
+		print(dfLights.head())
 
 	print("Output:")
 
-	# dFLen = len(dfLights)
-	# for i in range(dFLen):
-	# 	#if you print anything after the progress bar it will get messed up
-	# 	#printProgressBar(round((i+1)/dFLen,2),dFLen) 
+	startTime = datetime.now()
 
-	# 	lB = dfLights['ard'][i]
-	# 	print("Sending: " + str(lB))
-	# 	arduino.sendByte(str(lB).encode())
+	stats = {"percent":0,"elapsedTime":0,"estimatedRemainingTime":0,"light":0}
 
-	#  	#this is in seconds
-	# 	time.sleep(1)
+
+
+	dFLen = len(dfLights)
+
+	#convert df to json for POSTing
+	jsonLights = {}
+	for i in range(dFLen):
+		jsonLights[dfLights['Date'][i] + " " + dfLights['HH:MM'][i]] = int(dfLights['ard'][i])
+
+	#print(jsonLights)
+	postToAPI('data', json.dumps(jsonLights))
+
+	for i in range(dFLen):
+		if api.runIt == False:
+			arduino.turnOff()
+			arduino.serialObj.close()
+			break
+		elif api.runIt == True:
+
+			lB = dfLights['ard'][i]
+			#print("Sending: " + str(lB))
+			arduino.sendByte(str(lB).encode())
+
+			#run stats
+			stats['percent'] = float((i+1) / dFLen)
+			stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
+			stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
+			#stats['light'] = int(lB)
+			# if len(stats['light']) <= 0:
+			# 	stats['light'] = [lB]
+			# else:
+			# 	#stats['light']=
+			# 	stats['light'].append(lB)
+			#print(str(round(stats['percent'],3)) + "% - " + str(stats['elapsedTime']) + " seconds - " + str(stats['estimatedRemainingTime']) + " seconds")
+
+			# url = 'http://localhost:5000/runStats'
+			# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+			# x = requests.post(url, data=json.dumps(stats), headers=headers)
+
+			postToAPI('runStats', stats)
+
+		 	#this is in seconds
+			time.sleep(1)
+
+	api.runIt = False
+
+def postToAPI(endPoint,pData):
+	url = 'http://localhost:5000/' + endPoint
+	headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+	x = requests.post(url, data=json.dumps(pData), headers=headers)
+
+def runAll():
+
+	#Object that signals shutdown
+	_sentinel = object()
+
+	q = Queue()
+	t1 = Thread(target = apiThread, args =(q, ), daemon = True)
+	t1.start()
+
+	try:
+		while True:
+			if api.runIt == True:
+				runMachine()
+			time.sleep(3)
+	except KeyboardInterrupt:
+		#t1.join()
+		print("Keyboard Interrupt Exception")
+
+		#turn off the arduino outputs if possible
+		try:
+			arduino.turnOff()
+		except:
+			pass
+		#raise SystemExit(1)
 
 if __name__ == '__main__':
-	runAll(2)
+	runAll()

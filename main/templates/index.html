@@ -13,12 +13,21 @@
 <div id="test-settings">
     <h2>Test Settings</h2>
 
-    <form action="">
-        <label for="files">Choose source file:</label><br>
-        <select id="files" name="files">
-        </select>
+    <form onsubmit="return false">
 
-        <p>Facade:</p>
+        <p>
+            <label for="ports"><h3>Arduino Port:</h3></label>
+            <select id="ports" name="ports">
+            </select>
+        </p>
+
+        <p>
+            <label for="files"><h3>Source file:</h3></label>
+            <select id="files" name="files">
+            </select>
+        </p>
+
+        <h3>Facade:</h3>
 
         <input type="radio" id="north" name="facade" value="north">
         <label for="north">north</label><br>
@@ -35,8 +44,23 @@
         <!--  <input type="radio" id="roof" name="facade" value="roof">
         <label for="roof">roof</label><br> -->
 
-        <p>Time Scale:</p>
+        <!-- NOT FUNCTIONING YET -->
+        <h3>Time Range:</h3>
+        <p>
+            <label for="sd">Start date (D/M/YYYY)</label>
+            <input type="text" id="sd" name="sd" value=""><br>
+            <label for="st">Start hour (HH)</label>
+            <input type="text" id="st" name="st" value="">
+        </p>
 
+        <p>
+            <label for="ed">End date (D/M/YYYY)</label>
+            <input type="text" id="ed" name="ed" value=""><br>
+            <label for="et">End hour (HH)</label>
+            <input type="text" id="et" name="et" value="">
+        </p>
+
+        <h3>Time Scale:</h3>
 
         <input type="radio" id="rt" name="time" value="rt">
         <label for="rt">real time</label><br>
@@ -44,11 +68,9 @@
         <input type="radio" id="1s" name="time" value="1s">
         <label for="1s">1 hour = 1 second</label><br>
 
-        <input type="radio" id="custom" name="time" value="custom">
-        <label for="custom">custom</label>
-        <input type="text" id="custom-time" name="custom-time" value=""><br>
 
-        <p>Components:</p>
+
+        <h3>Components:</h3>
         <input type="checkbox" id="lights" name="lights" value="lights" checked>
         <label for="lights">lights</label><br>
 
@@ -58,10 +80,19 @@
         <label for="vehicle3"> I have a boat</label><br>  -->
 
         <p>
-          <input type="submit" value="Run Program">
+          <input type="submit" value="Run Program" onclick="formHandling()">
         </p>
 
     </form>
+
+    <div class="command-container">
+        <button type="button" onclick="pauseRun()">Pause</button>
+        <button type="button" onclick="stopRun()">Stop</button>
+    </div>
+    <div class="command-container">
+        <button type="button" onclick="shutdown()">Shutdown</button> 
+    </div>
+
 </div>
 
 
@@ -69,12 +100,18 @@
     <h2>Run Info</h2>
     <span id="percent">Percent complete:</span><br>
     <span id="time-ellapsed">Ellapsed time:</span><br>
-    <span id="time-remaining">Time remaining:</span><br>
+    <span id="time-remaining">Est. Time remaining:</span><br>
 
     <h3>Graph</h3>
+    <span id='graph'></span>
+<!--     <div id="curve_chart" style="width: 900px; height: 500px"></div>
+ -->    <div id="chart_div"></div>
+
 </div>
 
- <script src="static/js/index.js"></script> 
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="static/js/drawChart.js"></script> 
+<script src="static/js/index.js"></script> 
 
 </body>
 </html> 

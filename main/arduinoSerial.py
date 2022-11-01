@@ -1,18 +1,15 @@
 import serial
 import time
 
-print("Arduino Serial connection starting...")
-
 class ArduinoSerial():
-    def __init__(self, port):
-        self.port = port
+    def __init__(self, aPort):
+        self.port = aPort
         self.baud = 9600
         self.serialObj = serial.Serial(self.port)
+        print("Arduino Serial connection starting...")
         time.sleep(3)
-
-        ReceivedString = self.serialObj.readline()
-        print(ReceivedString)
-        #self.serialObj.close() 
+        self.receivedString = self.serialObj.readline()
+        print(self.receivedString.decode("utf-8") )
 
 #arduino = serial.Serial(port='COM4', baudrate=115200, timeout=.1)
 
@@ -26,7 +23,9 @@ class ArduinoSerial():
 #     num = input("Enter a number: ") # Taking input from user
 #     value = write_read(num)
 #     print(value) # printing the value
-
+    
+    def turnOff(self):
+        self.serialObj.write(str(0).encode()) 
 
     def sendByte(self,theByte):
         #with serial.Serial(self.port, self.baud, timeout=1) as ser:
