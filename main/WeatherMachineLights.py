@@ -71,7 +71,9 @@ class WMLights:
 
 		#δ declination angle
 		#date str to time
-		dfOr['Date Format'] = dfOr['Date'].apply(self.strToDateTime)
+		#this was used before it was previously turn in to a date...
+		#dfOr['Date Format'] = dfOr['Date'].apply(self.strToDateTime)
+
 		#date to day number
 		dfOr['Day num'] = dfOr['Date Format'].apply(self.dateToDayNumber)
 		dfOr['declination'] = dfOr['Day num'].apply(self.declinationAngle)

@@ -23,7 +23,8 @@ body {
 	border-style: solid;
 	float: left;
 	padding: 10px;
-	width: auto;
+	width: 70%;
+	float: right;
 }
 
 .command-container{

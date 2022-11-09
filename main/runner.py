@@ -120,7 +120,7 @@ def runLights(lData, azimuth):
 	#print(cList)
 
 	#create lights dataframe
-	initData = {'Date':lData['Date'],'HH:MM': lData["HH:MM"]}#,lData.columns[0]:mCData
+	initData = {'Date Format':lData['Date Format'],'HH:MM': lData["HH:MM"]}#,lData.columns[0]:mCData
 	dfLights = pd.DataFrame(initData)
 	#print(dfLights.head())
 
@@ -140,6 +140,78 @@ def runLights(lData, azimuth):
 	#print(dfLights.iloc[0:10])
 
 	return dfLights
+
+#this populates the table with consequetive dates for 1 calendar year
+def normalizeDates(nDF):
+	print("normalizing dates")
+
+	daysPerMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+
+	totDM = [0]
+
+	#create list with cumulative total days up to that poiunt
+	for d in range(1,len(daysPerMonth)):
+		totDM.append(totDM[d-1] + daysPerMonth[d-1])
+	
+	#print(data['Date'].head())
+	for i in range(len(nDF)):
+		#hours in the year
+		h=i+1
+		#days in the year
+		d = math.ceil(h/24)
+
+		if d <= totDM[1]:
+			#nDF[i] = datetime.strptime("1/" + str(d) +"/1976", '%m/%d/%Y').date()
+			nDF.loc[i] = datetime.strptime("1/" + str(d) +"/1976", '%m/%d/%Y').date()
+		elif d <= totDM[2]:
+			nDF.iloc[i] = datetime.strptime("2/" + str(d-totDM[1]) +"/1976", '%m/%d/%Y').date()
+		elif d <= totDM[3]:
+			nDF.iloc[i] = datetime.strptime("3/" + str(d-totDM[2]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[4]:
+			nDF.iloc[i] = datetime.strptime("4/" + str(d-totDM[3]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[5]:
+			nDF.iloc[i] = datetime.strptime("5/" + str(d-totDM[4]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[6]:
+			nDF.iloc[i] = datetime.strptime("6/" + str(d-totDM[5]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[7]:
+			nDF.iloc[i] = datetime.strptime("7/" + str(d-totDM[6]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[8]:
+			nDF.iloc[i] = datetime.strptime("8/" + str(d-totDM[7]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[9]:
+			nDF.iloc[i] = datetime.strptime("9/" + str(d-totDM[8]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[10]:
+			nDF.iloc[i] = datetime.strptime("10/" + str(d-totDM[9]) + "/1976", '%m/%d/%Y').date()
+		elif d <= totDM[11]:
+			nDF.iloc[i] = datetime.strptime("11/" + str(d-totDM[10]) + "/1976", '%m/%d/%Y').date()
+		else:
+			nDF.iloc[i] = datetime.strptime("12/" + str(d-totDM[11]) + "/1976", '%m/%d/%Y').date()
+
+		# if d <= totDM[1]:
+		# 	data['Date'][i] = datetime.strptime("1/" + str(d) +"/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[2]:
+		# 	data['Date'][i] = datetime.strptime("2/" + str(d-totDM[1]) +"/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[3]:
+		# 	data['Date'][i] = datetime.strptime("3/" + str(d-totDM[2]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[4]:
+		# 	data['Date'][i] = datetime.strptime("4/" + str(d-totDM[3]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[5]:
+		# 	data['Date'][i] = datetime.strptime("5/" + str(d-totDM[4]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[6]:
+		# 	data['Date'][i] = datetime.strptime("6/" + str(d-totDM[5]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[7]:
+		# 	data['Date'][i] = datetime.strptime("7/" + str(d-totDM[6]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[8]:
+		# 	data['Date'][i] = datetime.strptime("8/" + str(d-totDM[7]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[9]:
+		# 	data['Date'][i] = datetime.strptime("9/" + str(d-totDM[8]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[10]:
+		# 	data['Date'][i] = datetime.strptime("10/" + str(d-totDM[9]) + "/1976", '%m/%d/%Y').date()
+		# elif d <= totDM[11]:
+		# 	data['Date'][i] = datetime.strptime("11/" + str(d-totDM[10]) + "/1976", '%m/%d/%Y').date()
+		# else:
+		# 	data['Date'][i] = datetime.strptime("12/" + str(d-totDM[11]) + "/1976", '%m/%d/%Y').date()
+
+	return nDF
 
 def apiThread(outQ):
 	#start API
@@ -169,7 +241,7 @@ def runMachine():
 		az = 270
 
 	print("Timescale: " + api.runSettings['time'])
-	
+
 	components=''
 	if api.runSettings['light'] == 'true':
 		components = components + "lights "
@@ -194,11 +266,25 @@ def runMachine():
 	#get all the data in a dataframe
 	allData = importData(dataFile)
 
+	#normalize dates - not being used here - stop gap is in JS
+	allData['Date Format'] = normalizeDates(allData['Date'])
+
+	#format date
+	#allData['Date Format'] = allData['Date'].strptime(dT, '%m/%d/%Y').date()
+
+	#filter by day and time
+	if 'sday' in api.runSettings.keys():
+		print("TIME EXISTS!")
+		print(api.runSettings['sday'])
+		# Filter data between two dates
+		timedData = allData.loc[(allData['Date Format'] >= datetime.strptime(api.runSettings['sday'], '%m-%d-%Y').date()) & (allData['Date Format'] <= datetime.strptime(api.runSettings['eday'], '%m-%d-%Y').date())]
+		print(timedData.head())
+
 	###### LIGHTS ######
 	if api.runSettings['light'] == 'true':
 		# columns needed for light calculations:
-		lightCols = ['Date', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
-		dfLights = runLights(allData[lightCols], az)
+		lightCols = ['Date Format', 'HH:MM', 'Global Horizontal Radiation {Wh/m2}','Direct Normal Radiation {Wh/m2}','Diffuse Horizontal Radiation {Wh/m2}']
+		dfLights = runLights(timedData[lightCols], az)
 		print(dfLights.head())
 
 	print("Output:")
@@ -214,7 +300,8 @@ def runMachine():
 	#convert df to json for POSTing
 	jsonLights = {}
 	for i in range(dFLen):
-		jsonLights[dfLights['Date'][i] + " " + dfLights['HH:MM'][i]] = int(dfLights['ard'][i])
+		#jsonLights[dfLights['Date Format'][i].strftime("%Y-%m-%d") + " " + dfLights['HH:MM'][i]] = int(dfLights['ard'][i])
+		jsonLights[dfLights['Date Format'][i].strftime("%Y-%m-%d") + " " + dfLights['HH:MM'][i]] = int(dfLights['ard'][i])
 
 	#print(jsonLights)
 	postToAPI('data', json.dumps(jsonLights))

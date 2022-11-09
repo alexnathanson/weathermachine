@@ -48,7 +48,7 @@ def options():
                 response.append(p.name + " - " + p.description) 
         return response
 
-#this receives the users settings
+#this receives the users settings - should probably be a post...
 @app.route('/weather', methods=['GET'])
 def weather():
     global runIt
