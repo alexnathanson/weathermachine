@@ -197,7 +197,7 @@ function runInfo(rData){
 
     //change this so its only run once at the start to collect the run data
     //if(rData['elapsedTime'] > 0){
-    httpGetAsync("http://127.0.0.1:5000/data", (r)=>{drawChart(JSON.parse(r))})
+    httpGetAsync("http://127.0.0.1:5000/data", (r)=>{drawChart(JSON.parse(r),rData['percent'])})
     //}
 }
 
