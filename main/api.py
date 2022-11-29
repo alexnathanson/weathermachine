@@ -7,6 +7,7 @@ import webbrowser
 import os
 import serial.tools.list_ports
 
+devMode = False
 app = Flask(__name__)
 CORS(app)
 
@@ -46,6 +47,7 @@ def options():
             #print(p.description)
             if "Arduino" in p.description:
                 response.append(p.name + " - " + p.description) 
+        response.append('DEVMODE')
         return response
 
 #this receives the users settings - should probably be a post...

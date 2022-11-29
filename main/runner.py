@@ -17,7 +17,7 @@ import json
 
 dataDirectory = './data/cleaned/'
 
-devMode = False
+#devMode = False
 
 #arduino = object
 
