@@ -255,6 +255,19 @@ function httpGetAsync(dst, callback){
 
 function graphMode(mode){
     gMode = mode;
+
+    document.getElementById('allData').style.backgroundColor = "grey";
+    document.getElementById('ellapsedData').style.backgroundColor = "grey";
+    document.getElementById('recentData').style.backgroundColor = "grey";
+
+    if(mode == 0){
+        document.getElementById('allData').style.backgroundColor = "green";
+    } else if (mode == 1){
+        document.getElementById('ellapsedData').style.backgroundColor = "green";
+    } else if (mode == 2){
+        document.getElementById('recentData').style.backgroundColor = "green";
+    }
+
 }
 
 /*function httpGet(dst, syncBool,callback){

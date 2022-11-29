@@ -33,3 +33,15 @@ body {
 	padding: 10px;
 	margin: 10px;
 }
+
+#allData{
+	background-color: green;
+}
+
+#ellapsedData{
+	background-color: grey;
+}
+
+#recentData{
+	background-color: grey;
+}
