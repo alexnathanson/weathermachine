@@ -22,6 +22,8 @@ https://www.amazon.com/dp/B09TFFNH32/ref=sspa_dk_detail_1?psc=1&pd_rd_i=B09TFFNH
 7-30VDC
 10A (15A peak)
 
+<img src="wiring/motor-driver-711C9rF99YL._SL1017_.jpg">
+
 ### Purchase Link
 
 * https://www.amazon.com/Cytron-Bi-directional-Driver-Shield-Arduino/dp/B01M3WQWRK/ref=sr_1_3?crid=O54VNAVSYJ0X&keywords=10Amp+7V-30V+DC+Motor+Driver+Shield+for+Arduino&qid=1669129902&s=industrial&sprefix=10amp+7v-30v+dc+motor+driver+shield+for+arduino%2Cindustrial%2C74&sr=1-3
