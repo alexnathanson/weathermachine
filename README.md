@@ -9,8 +9,8 @@ To run:
 
 To do:
 
-smooth numbers over time
-timing
+smooth numbers over time (change based on user input - currently hard coded)
+light output is an array for some reason...
 
 Troubleshooting:
 

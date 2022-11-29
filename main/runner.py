@@ -293,8 +293,6 @@ def runMachine():
 
 	stats = {"percent":0,"elapsedTime":0,"estimatedRemainingTime":0,"light":0}
 
-
-
 	dFLen = len(dfLights)
 
 	#convert df to json for POSTing
@@ -306,37 +304,83 @@ def runMachine():
 	#print(jsonLights)
 	postToAPI('data', json.dumps(jsonLights))
 
-	for i in range(dFLen):
-		if api.runIt == False:
-			arduino.turnOff()
-			arduino.serialObj.close()
-			break
-		elif api.runIt == True:
+	realTime = False
+	#this runs if 1 hour is transposed to 1 second (each value is sent every second)
+	if not realTime:
+		for i in range(dFLen):
+			if api.runIt == False:
+				arduino.turnOff()
+				arduino.serialObj.close()
+				break
+			elif api.runIt == True:
 
-			lB = dfLights['ard'][i]
-			#print("Sending: " + str(lB))
-			arduino.sendByte(str(lB).encode())
+				lB = dfLights['ard'][i]
+				#print("Sending: " + str(lB))
+				arduino.sendByte(str(lB).encode())
 
-			#run stats
-			stats['percent'] = float((i+1) / dFLen)
-			stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
-			stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
-			#stats['light'] = int(lB)
-			# if len(stats['light']) <= 0:
-			# 	stats['light'] = [lB]
-			# else:
-			# 	#stats['light']=
-			# 	stats['light'].append(lB)
-			#print(str(round(stats['percent'],3)) + "% - " + str(stats['elapsedTime']) + " seconds - " + str(stats['estimatedRemainingTime']) + " seconds")
+				#run stats
+				stats['percent'] = 100 * float((i+1) / dFLen)
+				stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
+				stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
+				stats['light'] = int(lB)
+				# if len(stats['light']) <= 0:
+				# 	stats['light'] = [lB]
+				# else:
+				# 	#stats['light']=
+				# 	stats['light'].append(lB)
+				#print(str(round(stats['percent'],3)) + "% - " + str(stats['elapsedTime']) + " seconds - " + str(stats['estimatedRemainingTime']) + " seconds")
 
-			# url = 'http://localhost:5000/runStats'
-			# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-			# x = requests.post(url, data=json.dumps(stats), headers=headers)
+				# url = 'http://localhost:5000/runStats'
+				# headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+				# x = requests.post(url, data=json.dumps(stats), headers=headers)
 
-			postToAPI('runStats', stats)
+				postToAPI('runStats', stats)
 
-		 	#this is in seconds
-			time.sleep(1)
+			 	#this is in seconds
+				time.sleep(1)
+	#smooth values between hourly values
+	elif realTime:
+			while True:
+				if api.runIt == False:
+					arduino.turnOff()
+					arduino.serialObj.close()
+					break
+				elif api.runIt == True:
+					#run stats
+					stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
+
+					#determine how many hours have elapsed
+					#the max number sent out should not exceed to the total amount of hours in the data
+
+					# divide by only 60 to test a minute resolution instead of 60*60 hourly resolution 
+					timeInc = 60
+					eHours = math.floor(min(math.floor(stats['elapsedTime'] / timeInc),dFLen-1))
+
+					stats['percent'] = 100 * float((eHours+1) / dFLen)
+					stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
+
+					print(eHours)
+
+					if eHours < dFLen-1:
+						timeMidPoint = stats['elapsedTime'] / timeInc - math.floor(stats['elapsedTime'] / timeInc)
+						print(timeMidPoint)
+						stats['light'] = abs(dfLights['ard'][eHours] - (dfLights['ard'][eHours]+1)) * timeMidPoint
+						#lB = dfLights['ard'][eHours]
+						#print("Sending: " + str(lB))
+						arduino.sendByte(str(stats['light']).encode())
+					
+						postToAPI('runStats', stats)
+					elif eHours == dFLen-1:
+						stats['light'] = dfLights['ard'][eHours]
+						#print("Sending: " + str(lB))
+						arduino.sendByte(str(stats['light']).encode())
+					
+						postToAPI('runStats', stats)
+
+						break
+
+				 	#this is in seconds
+					time.sleep(2)
 
 	api.runIt = False
 

@@ -66,7 +66,7 @@
         <label for="rt">real time</label><br>
 
         <input type="radio" id="1s" name="time" value="1s">
-        <label for="1s">1 hour = 1 second</label><br>
+        <label for="1s">speed run (roughly 1 hour = 1 second)</label><br>
 
 
 
@@ -103,9 +103,14 @@
     <span id="time-remaining">Est. Time remaining:</span><br>
 
     <h3>Graph</h3>
+    Mode: <button type="button" onclick="graphMode(0)">Show All Data</button> <button type="button" onclick="graphMode(1)">Show Ellapsed Data</button> <button type="button" onclick="graphMode(2)">Zoom to Recent Data</button>
+
     <span id='graph'></span>
 <!--     <div id="curve_chart" style="width: 900px; height: 500px"></div>
  -->    <div id="chart_div"></div>
+    <h2>Current Output</h2>
+     <span id="lightOutput">Light:</span><br>
+
 
 </div>
 

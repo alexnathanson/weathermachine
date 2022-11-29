@@ -1,12 +1,12 @@
 # Hardware
 
 
-## Lights PWM Driver
+## LED Light PWM Driver
 
 IRF520 MOSFET Driver Module
 
-Max:
-24VDC
+Max:<br>
+24VDC<br>
 5A (>1A requires heatsink)
 
 <img src="wiring/IRF520MOSFETDriverModule.png">
@@ -19,8 +19,8 @@ https://www.amazon.com/dp/B09TFFNH32/ref=sspa_dk_detail_1?psc=1&pd_rd_i=B09TFFNH
 
 ## Pump motor driver
 
-7-24VDC
-10A
+7-30VDC
+10A (15A peak)
 
 ### Purchase Link
 

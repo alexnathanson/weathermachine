@@ -1,5 +1,7 @@
 let runUpdateInfo
 
+let gMode = 0
+
 //populate the file options drop down menu
 function fillFiles(fileList){
     fileList = cleanList(fileList)
@@ -190,14 +192,28 @@ function runInfo(rData){
     percent.innerHTML = "Percent complete: " + rData['percent'] + "%" 
 
     let timeellapsed = document.getElementById('time-ellapsed')
-    timeellapsed.innerHTML = "Ellapsed time: " + rData['elapsedTime']
+
+    let eT
+    //hourly resolution
+    if(rData['elapsedTime'] > (60*60)){
+        eT = String(rData['elapsedTime']/60/60) + " hours"
+    } else if (rData['elapsedTime'] > 60){
+        eT = String(rData['elapsedTime']/60) + " minutes"
+    } else {
+        eT = String(rData['elapsedTime']) + " seconds"
+    }
+    timeellapsed.innerHTML = "Ellapsed time: " + eT
 
     let timeremaining = document.getElementById('time-remaining')
     timeremaining.innerHTML = "Est. Time remaining: " + rData['estimatedRemainingTimes']
 
+    let lO = document.getElementById('lightOutput')
+    lO.innerHTML = "Light: " + rData['light']
+    console.log(rData['light'])
+
     //change this so its only run once at the start to collect the run data
     //if(rData['elapsedTime'] > 0){
-    httpGetAsync("http://127.0.0.1:5000/data", (r)=>{drawChart(JSON.parse(r),rData['percent'])})
+    httpGetAsync("http://127.0.0.1:5000/data", (r)=>{drawChart(JSON.parse(r),rData['percent'],gMode)})
     //}
 }
 
@@ -237,7 +253,9 @@ function httpGetAsync(dst, callback){
     xhr.send(null); 
 }
 
-
+function graphMode(mode){
+    gMode = mode;
+}
 
 /*function httpGet(dst, syncBool,callback){
 
