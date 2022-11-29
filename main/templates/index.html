@@ -35,7 +35,7 @@
         <input type="radio" id="east" name="facade" value="east">
         <label for="east">east</label><br>
 
-        <input type="radio" id="south" name="facade" value="south">
+        <input type="radio" id="south" name="facade" value="south" checked="checked">
         <label for="south">south</label><br>
 
         <input type="radio" id="west" name="facade" value="west">
@@ -62,13 +62,14 @@
 
         <h3>Time Scale:</h3>
 
+        <input type="radio" id="rt" name="time" value="rt">
+        <label for="rt">real time (1 hour = 1 hour)</label><br>
+
         <input type="radio" id="rt" name="time" value="rt" checked="checked">
-        <label for="rt">real time</label><br>
+        <label for="rt">60X (1 hour = 1 minute)</label><br>
 
         <input type="radio" id="1s" name="time" value="1s">
-        <label for="1s">speed run (roughly 1 hour = 1 second)</label><br>
-
-
+        <label for="1s">3600X (roughly 1 hour = 1 second)</label><br>
 
         <h3>Components:</h3>
         <input type="checkbox" id="lights" name="lights" value="lights" checked>
@@ -108,7 +109,7 @@
     <span id='graph'></span>
 <!--     <div id="curve_chart" style="width: 900px; height: 500px"></div>
  -->    <div id="chart_div"></div>
-    <h2>Current Output</h2>
+    <h3>Most Recent Output</h3>
      <span id="lightOutput">Light:</span><br>
 
 
