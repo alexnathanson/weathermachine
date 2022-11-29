@@ -11,6 +11,10 @@ To do:
 
 smooth numbers over time (change based on user input - currently hard coded)
 light output is an array for some reason...
+export test settings?
+add gauges
+shift to REACT
+refactor
 
 Troubleshooting:
 

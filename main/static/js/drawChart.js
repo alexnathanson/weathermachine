@@ -63,10 +63,12 @@ function drawChart(data, progress, mode) {
         vAxis: {
           title: 'Light'
         },
-        lineWidth: [4,2],
+        lineWidth: [3],
         colors: ['black', 'yellow']
       };
 
-      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+      //var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+      var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+
       chart.draw(cData, options);
     }

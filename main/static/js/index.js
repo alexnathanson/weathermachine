@@ -256,9 +256,9 @@ function httpGetAsync(dst, callback){
 function graphMode(mode){
     gMode = mode;
 
-    document.getElementById('allData').style.backgroundColor = "grey";
-    document.getElementById('ellapsedData').style.backgroundColor = "grey";
-    document.getElementById('recentData').style.backgroundColor = "grey";
+    document.getElementById('allData').style.backgroundColor = "lightgrey";
+    document.getElementById('ellapsedData').style.backgroundColor = "lightgrey";
+    document.getElementById('recentData').style.backgroundColor = "lightgrey";
 
     if(mode == 0){
         document.getElementById('allData').style.backgroundColor = "green";

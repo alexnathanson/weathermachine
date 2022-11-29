@@ -240,7 +240,22 @@ def runMachine():
 	elif api.runSettings['facade'] == 'west':
 		az = 270
 
-	print("Timescale: " + api.runSettings['time'])
+
+		print("Time Mode: " + str(api.runSettings['time']))
+
+	#timeMode = str(api.runSettings['time'])
+	# 60 * 60 for real time
+	if int(api.runSettings['time']) == 1:
+		timeInc = 60 * 60
+		timeMode = 'real time'
+	# 60 for minute resolution 
+	elif int(api.runSettings['time']) == 2:
+		timeInc = 60
+		timeMode = '1 hr = 1 min'
+	elif int(api.runSettings['time']) == 3:
+		timeInc = 1
+		timeMode = '1 hr = 1 sec'
+	print("Timescale: " + timeMode)
 
 	components=''
 	if api.runSettings['light'] == 'true':
@@ -304,9 +319,8 @@ def runMachine():
 	#print(jsonLights)
 	postToAPI('data', json.dumps(jsonLights))
 
-	realTime = False
-	#this runs if 1 hour is transposed to 1 second (each value is sent every second)
-	if not realTime:
+	#this runs if 1 hour is transposed to roughly 1 second (each value is sent every second)
+	if api.runSettings['time'] == 3:
 		for i in range(dFLen):
 			if api.runIt == False:
 				arduino.turnOff()
@@ -339,48 +353,46 @@ def runMachine():
 			 	#this is in seconds
 				time.sleep(1)
 	#smooth values between hourly values
-	elif realTime:
-			while True:
-				if api.runIt == False:
-					arduino.turnOff()
-					arduino.serialObj.close()
+	else:
+		while True:
+			if api.runIt == False:
+				arduino.turnOff()
+				arduino.serialObj.close()
+				break
+			elif api.runIt == True:
+				#run stats
+				stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
+
+				#determine how many hours have elapsed
+				#the max number sent out should not exceed to the total amount of hours in the data
+
+				eHours = math.floor(min(math.floor(stats['elapsedTime'] / timeInc),dFLen-1))
+
+				stats['percent'] = 100 * float((eHours+1) / dFLen)
+				stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
+
+				print(eHours)
+
+				if eHours < dFLen-1:
+					timeMidPoint = stats['elapsedTime'] / timeInc - math.floor(stats['elapsedTime'] / timeInc)
+					print(timeMidPoint)
+					stats['light'] = abs(dfLights['ard'][eHours] - (dfLights['ard'][eHours]+1)) * timeMidPoint
+					#lB = dfLights['ard'][eHours]
+					#print("Sending: " + str(lB))
+					arduino.sendByte(str(stats['light']).encode())
+				
+					postToAPI('runStats', stats)
+				elif eHours == dFLen-1:
+					stats['light'] = dfLights['ard'][eHours]
+					#print("Sending: " + str(lB))
+					arduino.sendByte(str(stats['light']).encode())
+				
+					postToAPI('runStats', stats)
+
 					break
-				elif api.runIt == True:
-					#run stats
-					stats['elapsedTime'] = int((datetime.now() - startTime).total_seconds())
 
-					#determine how many hours have elapsed
-					#the max number sent out should not exceed to the total amount of hours in the data
-
-					# divide by only 60 to test a minute resolution instead of 60*60 hourly resolution 
-					timeInc = 60
-					eHours = math.floor(min(math.floor(stats['elapsedTime'] / timeInc),dFLen-1))
-
-					stats['percent'] = 100 * float((eHours+1) / dFLen)
-					stats['estimatedRemainingTime'] = (stats['elapsedTime'] / stats['percent']) * (100 - stats['percent'])
-
-					print(eHours)
-
-					if eHours < dFLen-1:
-						timeMidPoint = stats['elapsedTime'] / timeInc - math.floor(stats['elapsedTime'] / timeInc)
-						print(timeMidPoint)
-						stats['light'] = abs(dfLights['ard'][eHours] - (dfLights['ard'][eHours]+1)) * timeMidPoint
-						#lB = dfLights['ard'][eHours]
-						#print("Sending: " + str(lB))
-						arduino.sendByte(str(stats['light']).encode())
-					
-						postToAPI('runStats', stats)
-					elif eHours == dFLen-1:
-						stats['light'] = dfLights['ard'][eHours]
-						#print("Sending: " + str(lB))
-						arduino.sendByte(str(stats['light']).encode())
-					
-						postToAPI('runStats', stats)
-
-						break
-
-				 	#this is in seconds
-					time.sleep(2)
+			 	#this is in seconds
+				time.sleep(2)
 
 	api.runIt = False
 
