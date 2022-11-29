@@ -36,13 +36,23 @@ function drawChart(data, progress, mode) {
       for (let d=0;d<dKeys.length;d++){
         //console.log(data[dKeys[d]])
         //cData.addRow([d,data[dKeys[d]]])
-        if( d <= (dKeys.length*progress*.01)){
-          cData.addRow([new Date(dKeys[d]),data[dKeys[d]],data[dKeys[d]]])
-        } else {
-          if(mode == 0){
+
+        if(mode == 0){
+          if( d <= (dKeys.length*progress*.01)){
+            cData.addRow([new Date(dKeys[d]),data[dKeys[d]],data[dKeys[d]]])
+          } else {
             cData.addRow([new Date(dKeys[d]),data[dKeys[d]],null])
-          }
+            }
+        } else if (mode == 1){
+          if( d <= (dKeys.length*progress*.01)){
+            cData.addRow([new Date(dKeys[d]),data[dKeys[d]],data[dKeys[d]]])
+          } 
+        } else if (mode == 2){
+          if( d > (dKeys.length*progress*.01)-10 && d <= (dKeys.length*progress*.01)){
+            cData.addRow([new Date(dKeys[d]),data[dKeys[d]],data[dKeys[d]]])
+          } 
         }
+        
       }
 
       //good annotation stuff here: https://stackoverflow.com/questions/17845607/google-charts-line-graph-points
