@@ -3,6 +3,7 @@
 
 ## LED Light PWM Driver
 
+<img src="wiring/FROG-LED-Schematic.jpg">
 IRF520 MOSFET Driver Module
 
 Max:<br>
