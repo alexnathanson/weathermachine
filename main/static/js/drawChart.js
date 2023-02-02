@@ -1,7 +1,8 @@
 //typically the chart creation would happen in a callback, like the commented out line below,
 //but is not needed here if the chart is draw well after  the page loads
 
-google.load("visualization", "1", {packages:["corechart"]});
+google.load("visualization", "1", {packages:["corechart",'gauge']});
+
 //google.setOnLoadCallback(drawChart);
 
 console.log("draw chart present")
@@ -71,4 +72,42 @@ function drawChart(data, progress, mode) {
       var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
 
       chart.draw(cData, options);
+
+      drawGuage()
     }
+
+
+ function drawGuage() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Light', 80],
+          ['Temp', 55],
+          ['Humidity', 68],
+          ['Wind', 68]
+        ]);
+
+        var options = {
+          width: 400, height: 120,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+          minorTicks: 5
+        };
+
+        var chart = new google.visualization.Gauge(document.getElementById('guage_div'));
+
+        chart.draw(data, options);
+
+        setInterval(function() {
+          data.setValue(0, 1, 40 + Math.round(60 * Math.random()));
+          chart.draw(data, options);
+        }, 13000);
+        setInterval(function() {
+          data.setValue(1, 1, 40 + Math.round(60 * Math.random()));
+          chart.draw(data, options);
+        }, 5000);
+        setInterval(function() {
+          data.setValue(2, 1, 60 + Math.round(20 * Math.random()));
+          chart.draw(data, options);
+        }, 26000);
+      }

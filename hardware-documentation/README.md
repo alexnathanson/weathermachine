@@ -1,5 +1,16 @@
 # Hardware
 
+## LED panel
+
+4 total
+
+https://www.mars-hydro.com/ts-3000-led-grow-light
+
+## LED Power Supply
+
+1 per LED panel
+
+https://www.meanwell.com/webapp/product/search.aspx?prod=ELG-240
 
 ## LED Light PWM Driver
 
