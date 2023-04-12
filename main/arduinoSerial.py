@@ -6,11 +6,12 @@ class ArduinoSerial():
         self.port = aPort
         self.baud = 9600
         if self.port != 'DEVMODE':
-            self.serialObj = serial.Serial(self.port)
+            self.serialObj = serial.Serial(self.port, self.baud) #might want to add timeout , timeout=0.1
             print("Arduino Serial connection starting...")
             time.sleep(3)
-            self.receivedString = self.serialObj.readline()
-            print(self.receivedString.decode("utf-8") )
+            #the below 2 lines were commented in originally and need to be tested
+            #self.receivedString = self.serialObj.readline()
+            #print(self.receivedString.decode("utf-8") )
             self.devmode = False
         else:
             self.devmode = True
@@ -36,8 +37,24 @@ class ArduinoSerial():
     def sendByte(self,theByte):
         #with serial.Serial(self.port, self.baud, timeout=1) as ser:
             #time.sleep(0.5)
-        #print("byte: " + str(theByte))
+        print("byte: " + str(theByte))
         if not self.devmode:
             self.serialObj.write(theByte)   # send the pyte string 'H'
             #time.sleep(0.5)   # wait 0.5 seconds
             #ser.write(b'L')   # send the byte string 'L'
+
+            #this needs to be in its own thread
+    # def readSerial():
+    #     #ser = serial.Serial(comport, baudrate, timeout=0.1)         # 1/timeout is the frequency at which the port is read
+
+    #     while True:
+
+    #         data = ser.readline().decode().strip()
+
+    #         if data and timestamp:
+    #             timestamp = time.strftime('%H:%M:%S')
+    #             print(f'{timestamp} > {data}')
+    #         elif data:
+    #             print(data)
+
+    #     return
