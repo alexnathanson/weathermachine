@@ -28,18 +28,49 @@ Make sure to change the I2C address based on the list of subsystem addresses bel
 
 The lights are controlled via PWM from the Arduino. There are no sensors. Preprocessing of the light data happens at the test runner and only 1 0-255 value is passed to the Arduino.
 
-* Original data source: Global Horizontal Radiation {Wh/m2}, Diffuse Horizontal Radiation {Wh/m2}, and Direct Normal Radiation {Wh/m2} is reduced down to 1 value based on surface orientation.
-* Preprocessing on TS: This value is scaled to the 0-255 range.
-* Output from TS to Ard: integer 0-255
-* Output from Ard to control circuit: PWM
+* Original data sources: Global Horizontal Radiation {Wh/m2}, Diffuse Horizontal Radiation {Wh/m2}, and Direct Normal Radiation {Wh/m2} is reduced down to 1 value based on surface orientation.
+* Preprocessing on TS: Surface orientation value is scaled to the 0-255 range.
+* Output from TS to Arduino: integer 0-255
+* Output from Arduino to light circuit: PWM
 
 ### TEA
 
+* Original data sources: Temperature TBD
+* Preprocessing on TS: TBD
+* Output from TS to Arduino: 1 temperature value
+* Output from Arduino to circuit: 2 values (intensity and direction)
+
 ### Humidity
+
+
+* Original data sources: humidity value TBD
+* Preprocessing on TS: likely none
+* Output from TS to Arduino: 1 value TBD
+* Output from Arduino to circuit: TBD wind velocity and temperature
 
 ### Wind
 
-## Communication Protocol & String Structure
+* Original data sources: Wind velocity and direction TBD
+* Preprocessing on TS: TBD - preprocessing of wind velocity + direction to get 1 value will be required
+* Output from TS to Arduino: 1 value TBD
+* Output from Arduino to circuit: TBD wind velocity and temperature
+
+## Communication Protocol & Serial String Structure
+
+### From TS to Arduino 
+The TS sends all data to the Arduino network as a JSON dictionary in the following format.
+
+`{ lights : [int 0-255], tea: [int 0-255],hum:[int 0-255],wind:[int 0-255]}`
+
+In repeate mode, the main Arduino just sends it along.
+
+In parse mode, the main Arduino parses the incoming message and only sends it along to the appropriate device
+
+### From Arduino to TS
+
+Because exact sensor data that would get sent from subsystems to TS for archiving isn't available yet, that specific format isn't finalized, but it will probably follow a similar JSON format as above, except messages would be seperated out as individual subsystems like below.
+
+`{ tea: {temp1: [int 0-255], temp2: [int 0-255], temp3: [int 0-255]}`
 
 ## Troubleshooting
 
@@ -52,7 +83,7 @@ In the Arduino IDE console, type "info" and the Arduino will respond with
 
 ### Message Content
 
-In the Arduino IDE, open a console and any incoming messages from either I2C or Serial should print out as they come in.
+In the Arduino IDE, open a console and any incoming messages from I2C should print out as they come in.
 
 ## Adding Subsystem Specific Code
 
