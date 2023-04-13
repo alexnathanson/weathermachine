@@ -59,7 +59,7 @@ The lights are controlled via PWM from the Arduino. There are no sensors. Prepro
 
 ## Communication Protocol & Serial String Structure
 
-### From TS to Arduino
+### From TS to Broadcaster via Serial
 The TS sends all data to the Arduino network as a JSON dictionary in the following format. Regardless of what subsystem info is include, all data is broadcast to the entire network. This can be changed in the future if it leads to problems.
 
 `{ lights : [int 0-255]}`
@@ -67,6 +67,26 @@ The TS sends all data to the Arduino network as a JSON dictionary in the followi
 or for multiple values: 
 
 `{ lights : [int 0-255], tea: [int 0-255],hum:[int 0-255],wind:[int 0-255]}`
+
+### Broadcaster On receiving Serial:
+
+1) parse JSON
+2) break up JSON data by subsystem
+3) broadcast all data to all devices
+
+### Broadcaster on receiving I2C:
+
+1) pass incoming data to Serial
+
+### Subsystems on receiving Serial:
+
+1) send to Broadcaster via 12C
+
+### Subsystems on receiving I2C:
+
+1) parse incoming JSON data
+2) check if data is intended for the particular subsystem
+3) if yes, run run system functions
 
 ### From Arduino to TS
 
