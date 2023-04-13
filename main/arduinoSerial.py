@@ -16,8 +16,8 @@ class ArduinoSerial():
             #self.receivedString = self.serialObj.readline()
             #print(self.receivedString.decode("utf-8") )
             self.devmode = False
-            self.readThread = Thread(target = self.readSerial).start()
-            #self.readThread.start()
+            self.readThread = Thread(target = self.readSerial)
+            self.readThread.start()
         else:
             self.devmode = True
             print("Running in DEVMODE with no Arduino")
@@ -38,6 +38,8 @@ class ArduinoSerial():
     #this function attempts to shut down all the subsystems properly before closing the program
     def turnOff(self):
         if not self.devmode:
+            print('Attempting to shut off subsystems before exit')
+            self.readThread.join()
             self.serialObj.write(str(0).encode()) 
 
     def sendByte(self,theByte):

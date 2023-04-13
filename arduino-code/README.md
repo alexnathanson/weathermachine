@@ -10,7 +10,7 @@ The TR determines what commands to send to the subsystems based on user defined 
 
 Currently, the only subsystem code included is for the lights. More complex subsystem code should probably be a FROG specific library.
 
-## Installation
+## Installation of serial-to-i2c-bidirectional.ino
 
 Make sure to change the I2C address based on the list of subsystem addresses below.
 
@@ -82,6 +82,8 @@ In the Arduino IDE console, type "info" and the Arduino will respond with
 * its own I2C address
 * a list of all the I2C devices and their addresses that it can detect
 * the total number of I2C devices it can detect
+
+In the Arduino IDE console, type "test" and the Arduino will send a properly formatted I2C message with 0 values
 
 ### Message Content
 

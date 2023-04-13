@@ -424,7 +424,7 @@ def runAll():
 			arduino.turnOff()
 		except:
 			pass
-		#raise SystemExit(1)
+		raise SystemExit(1)
 
 if __name__ == '__main__':
 	runAll()
