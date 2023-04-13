@@ -16,7 +16,7 @@ byte i2cDevices[128];
 int nDevices = 0;
 
 //value should correlate to i2c addressses listed above
-const int subsystem = 1;
+const int subsystem = 2;
 
 void setup() {
   //initialize array as all 0
@@ -75,14 +75,16 @@ void receiveEvent(int howMany) {
     incomingI2C += c;
     //Serial.print(c);         // print the character
   }
-  //repeat incoming I2C to serial
-  // if broadcaster, this just passes it on to the test runner
-  // if a subsystem, you can use this for troubleshooting in the IDE console
-  Serial.println(incomingI2C);
+  
 
   //if not the broadcaster, parse the data to do something with it
   if(subsystem != 1){
       parseJSON(incomingI2C);
+      // if a subsystem, you can use this for troubleshooting in the IDE console
+      //Serial.println(incomingI2C);
+  } else {
+    // if broadcaster, this just passes it on to the test runner
+    Serial.println(incomingI2C);
   }
   //int x = Wire.read();    // receive byte as an integer
 }
@@ -93,7 +95,9 @@ void receiveEvent(int howMany) {
 }*/
 
 void runLights(int brightness){
-  Serial.println("Running Lights");
+  Serial.print("Running Lights: ");
+  Serial.println(brightness);
+  
   if (brightness == 0){
     digitalWrite(ledPin, LOW);
   } else {
@@ -101,16 +105,22 @@ void runLights(int brightness){
   }
 }
 
-void runTea(int brightness){
-  digitalWrite(ledPin, brightness);
+void runTea(int temp){
+  Serial.print("Running TEA: ");
+  Serial.println(temp);
+  digitalWrite(ledPin, temp);
 }
 
-void runHumidity(int brightness){
-  digitalWrite(ledPin, brightness);
+void runHumidity(int humidity){
+  Serial.print("Running Humidity: ");
+  Serial.println(humidity);
+  digitalWrite(ledPin, humidity);
 }
 
-void runWind(int brightness){
-  digitalWrite(ledPin, brightness);
+void runWind(int wind){
+  Serial.print("Running Wind: ");
+  Serial.println(wind);
+  digitalWrite(ledPin, wind);
 }
 
 
@@ -193,53 +203,40 @@ void broadcastI2C(String m){
   // breakup serial into individual subsystem chunks to be small enough to send via i2c
     if(subsystem == 1){
       String lights = doc["lights"];
-      if (lights != NULL) {
-        //Serial.println(lights);
+      if (!doc["lights"].isNull()) {
         broadcastI2C("{\"lights\":" + lights + "}");
       }
     
       String wind = doc["wind"];
-      if (wind != NULL) {
-        //Serial.println(wind);
+      if (!doc["wind"].isNull()) {
         broadcastI2C("{\"wind\":" + wind + "}");
       }
     
       String tea = doc["tea"];
-      if (tea != NULL) {
-        //Serial.println(tea);
+      if (!doc["tea"].isNull()) {
         broadcastI2C("{\"tea\":" + tea + "}");
       }
     
       String hum = doc["hum"];
-      if (hum != NULL) {
-        //Serial.println(humidity);
+      if (!doc["hum"].isNull()) {
         broadcastI2C("{\"hum\":" + hum + "}");
       }
     } else if(subsystem == 2){
       //check if data is meant for this particular subsystem
-      int lights = doc["lights"];
-      if (lights != NULL) {
-        Serial.println("Message for Lights subsystem");
-        //Serial.println(lights);
-        runLights(lights);
+      if (!doc["lights"].isNull()) {
+        runLights(doc["lights"]);
       }
     } else if (subsystem == 3){
-      int tea = doc["tea"];
-      if (tea != NULL) {
-        //Serial.println(tea);
-        runTea(tea);
+      if (!doc["tea"].isNull()) {
+        runTea(doc["tea"]);
       }
     } else if (subsystem == 4){
-      int wind = doc["wind"];
-      if (wind != NULL) {
-        //Serial.println(wind);
-        runWind(wind);
+      if (!doc["wind"].isNull()) {
+        runWind(doc["wind"]);
       }
     } else if (subsystem == 5){
-      int humidity = doc["hum"];
-      if (humidity != NULL) {
-        //Serial.println(humidity);
-        runHumidity(humidity);
+      if (!doc["hum"].isNull()) {
+        runHumidity(doc["hum"]);
       }
     }
 

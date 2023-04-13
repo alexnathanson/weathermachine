@@ -16,7 +16,8 @@ class ArduinoSerial():
             #self.receivedString = self.serialObj.readline()
             #print(self.receivedString.decode("utf-8") )
             self.devmode = False
-            self.readThread = Thread(target = self.readSerial)
+            self.serialData = ''
+            self.readThread = Thread(target = self.readSerial, daemon = True)
             self.readThread.start()
         else:
             self.devmode = True
@@ -55,8 +56,13 @@ class ArduinoSerial():
         #ser = serial.Serial(comport, baudrate, timeout=0.1)         # 1/timeout is the frequency at which the port is read
         print('running read serial')
         while True:
-            data = self.serialObj.readline()
-            print(data.decode("utf-8") )
+            newS = False
+            while self.serialObj.in_waiting:
+                newS = True
+                self.serialData = self.serialObj.readline().decode('utf-8')
+            if newS:
+                print(self.serialData)
+                newS = False
 
             #self.receivedString = self.serialObj.readline()
             #print(self.receivedString.decode("utf-8") )

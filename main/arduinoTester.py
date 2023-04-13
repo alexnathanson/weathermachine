@@ -1,14 +1,20 @@
 # import os
-# import logging
+import logging
 from arduinoSerial import ArduinoSerial as Arduino #this is the code for communicating with an Arduino via serial
 # import math
 # import sys
 from threading import Thread
-from queue import Queue
+#from queue import Queue
 from _thread import interrupt_main
 import time
 import serial.tools.list_ports
 import random
+from datetime import datetime
+import logging
+
+logging.basicConfig(filename='main/logs/tester' + datetime.now().strftime("%Y-%m-%d-%H-%M") +'.log',  level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+#logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.info('tester running!')
 
 def testArduinos():
 	port = findArduino()
@@ -22,17 +28,23 @@ def testArduinos():
 		#interrupt_main()
 		raise SystemExit(1)		
 
-	#m=255
-	#random.seed(10)
+	tempData = ''
 	while True:
-		for i in range(0,6):
-			m = 50 * i
-			testMessage = { 'lights' : m, 'tea': m,'hum':m,'wind':m}
+			if tempData != arduino.serialData:
+				tempData = arduino.serialData
+				logging.info(tempData)
+
+			testMessage = { 'lights' : 255, 'tea': 16,'hum':100,'wind':16}
 			arduino.sendByte(str(testMessage).encode())
 			#m = int(random.random() * 255)
 
 			time.sleep(3)
+
+			testMessage = { 'lights' : 0, 'tea': 0,'hum':0,'wind':0}
+			arduino.sendByte(str(testMessage).encode())
 		
+			time.sleep(3)
+
 	
 def runAll():
 
@@ -80,5 +92,4 @@ def findArduino():
 			print("Arduino not detected")
 
 if __name__ == '__main__':
-	
 	runAll()
