@@ -12,9 +12,17 @@ Currently, the only subsystem code included is for the lights. More complex subs
 
 ## Installation of serial-to-i2c-bidirectional.ino
 
+### Software
+
 Make sure to change the I2C address based on the list of subsystem addresses below.
 
 Install Arduino Json https://arduinojson.org/v6/doc/installation/
+
+### Wiring
+
+All Arduinos are connected together via pins GND, A4, and A5. Note that if Arduinos share a power supply with a common ground, the GND pin connection isn't necessary.
+
+<img src="hardware-documentation/wiring/ArduinoNetworkWiring.png">
 
 ### Adddresses
 
