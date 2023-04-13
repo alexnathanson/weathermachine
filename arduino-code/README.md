@@ -22,7 +22,7 @@ Install Arduino Json https://arduinojson.org/v6/doc/installation/
 
 All Arduinos are connected together via pins GND, A4, and A5. Note that if Arduinos share a power supply with a common ground, the GND pin connection isn't necessary.
 
-<img src="hardware-documentation/wiring/ArduinoNetworkWiring.png">
+<img src="/hardware-documentation/wiring/ArduinoNetworkWiring.png">
 
 ### Adddresses
 
