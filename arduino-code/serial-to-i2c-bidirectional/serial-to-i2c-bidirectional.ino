@@ -1,6 +1,6 @@
 /*
  * I2C Addresses:
- * MAIN : 1
+ * BROADCASTER : 1
  * LIGHTS : 2
  * TEA : 3
  * WIND : 4
@@ -8,14 +8,19 @@
  */
 
 #include <Wire.h>
-int i2cDevices[128];
+#include <ArduinoJson.h>
+
+
+byte i2cDevices[128];
+int nDevices = 0;
 
 //value should correlate to i2c addressses listed above
 const int subsystem = 1;
-
-const int ledPin = 13;
  
 void setup() {
+  //initialize array as all 0
+  setupDeviceList();
+
   // Initialize I2C bus
   Wire.begin(subsystem); 
   Wire.setWireTimeout(3000, false);
@@ -29,21 +34,21 @@ void loop() {
   if (Serial.available()) {
     String message = Serial.readStringUntil('\n'); // Read serial message until newline character
 
-    //print your own info to serial
+    //respond to the info request with your own info
     if (message == "info"){
       Serial.println("***INFO***");
       Serial.println("My address is " + String(subsystem));
       scannerI2C();
     } else {
+      Serial.println(message);
+      //if this is not the broadcaster, just send the data to the broadcaster.
+      //in the future the input would likely not be from Serial but from the sensors
       if(subsystem != 1){
         Wire.beginTransmission(1);
         Wire.write(message.c_str()); // Send the message as a string
         Wire.endTransmission(); // End I2C transmission
-      } else {
-        Wire.beginTransmission(2); // Replace with the I2C address of the receiving Arduino
-        Wire.write(message.c_str()); // Send the message as a string
-        Wire.endTransmission(); // End I2C transmission
-        Serial.println('\n');
+      } else {//if this is the broadcaster, broadcast to all devices in the network
+        broadcastI2C(message);         
       } 
     }
   }
@@ -69,12 +74,20 @@ void requestEvent() {
 }
 
 void lights(int brightness){
+  const int ledPin = 13;
+
   analogWrite(ledPin, brightness);
+}
+void setupDeviceList(){
+  for (byte d = 0; d < 128; ++d) {
+    i2cDevices[d]=0;  
+  }  
 }
 
 //scan for all connected i2c devices
 void scannerI2C(){
-  int nDevices = 0;
+  nDevices = 0;
+  
   for (byte address = 1; address < 127; ++address) {
     // The i2c_scanner uses the return value of the Wire.endTransmission
     //to see if a device did acknowledge to the address.
@@ -89,8 +102,12 @@ void scannerI2C(){
     } else if (error == 4) {
       Serial.print("Unknown error at address 0x");
       Serial.println(address, HEX);
+      i2cDevices[nDevices]=0;
+    } else {
+      i2cDevices[nDevices]=0;
     }
   }
+  
   if (nDevices == 0) {
     Serial.println("No I2C devices found\n");
   } else {
@@ -100,4 +117,15 @@ void scannerI2C(){
     //print location of devices
     Serial.println('\n');
   }
-}
+
+ }
+
+ //broadcast message to all connected i2c devices
+ //there may be a more elegant way to do this with sending to the 0 address
+void broadcastI2C(String m){
+  for (byte address = 2; address < 127; ++address) {
+    Wire.beginTransmission(address); // Replace with the I2C address of the receiving Arduino
+    Wire.write(m.c_str()); // Send the message as a string
+    Wire.endTransmission(); // End I2C transmission
+  }
+ }

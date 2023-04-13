@@ -3,29 +3,11 @@
 from arduinoSerial import ArduinoSerial as Arduino #this is the code for communicating with an Arduino via serial
 # import math
 # import sys
-from threading import Thread
-from queue import Queue
+# from threading import Thread
+# from queue import Queue
 from _thread import interrupt_main
-
+import time
 import serial.tools.list_ports
-
-#devMode = False
-
-#arduino = object
-
-#prints a progress bar on the console
-#note that the terminal window needs to be wide enough to fit all text otherwise it will look wierd
-def progressBar(iteration, total, prefix = 'Progress', suffix = 'Complete', suffix2 = 'Min Remaining', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-
-    #prefix = "Progress"
-	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-	filledLength = int(length * iteration // total)
-	bar = fill * filledLength + '-' * (length - filledLength)
-	estMin = total - iteration
-	print(f'\r{prefix} |{bar}| {iteration}% {suffix} {estMin} {suffix2}', end = printEnd)
-	
-	if iteration == 100:
-		print()
 
 def run():
 	global arduino
@@ -45,7 +27,16 @@ def run():
 		#interrupt_main()
 		raise SystemExit(1)		
 	
-	arduino.sendByte(str('testing python').encode())
+	while True:
+		broadcastToArduinos(255)
+		time.sleep(5)
+		broadcastToArduinos(0)
+		time.sleep(5)
+
+
+def broadcastToArduinos(m):
+	testMessage = { 'lights' : m, 'tea': m,'hum':m,'wind':m}
+	arduino.sendByte(str(testMessage).encode())
 	
 def runAll():
 

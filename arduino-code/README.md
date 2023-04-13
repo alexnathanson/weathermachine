@@ -4,7 +4,7 @@ This system is composed of 5 Arduinos and a computer that acts as the test runne
 
 The test runner is a Python program. It sends commands via Serial. 1 Arduino receives this serial data and passes it on to all the other Arduinos that run individual subsystems via I2C. The system is intended to be modular, to enable the system to run with any amount of subsystems connected and so development work can happen more easily.
 
-Some of the individual subsystems have sensors. In some cases these sensors are just used for control feedback to maintain a certain output level, but in some cases sensor data may need to be logged. For this reason, communication in the system is bidirectional. All subsystem Arduinos can pass data back to the TR via sending it over I2C to the main Arduino, which converts it in to Serial to send to the TR. (Currently, the TR is not set up to archive this data, though that functionality could easily be added in the future.)
+Some of the individual subsystems have sensors. In some cases these sensors are just used for control feedback to maintain a certain output level, but in some cases sensor data may need to be logged. For this reason, communication in the system is bidirectional. All subsystem Arduinos can pass data back to the TR via sending it over I2C to the broadcaster Arduino, which converts it in to Serial to send to the TR. (Currently, the TR is not set up to archive this data, though that functionality could easily be added in the future.)
 
 The TR determines what commands to send to the subsystems based on user defined test parameters (see the main README.md file for more info). The data originates from an EPW file. In order to simplify comunication and computational load on the Arduinos, the least amount and smallest dimension of data is sent to the Arduinos as possible. Some of subsystem data requires preprocessing that happens on the TR either before the test or on the fly at runtime. In some cases, the Arduino does handle a small amount of preprocessing.
 
@@ -14,9 +14,11 @@ Currently, the only subsystem code included is for the lights. More complex subs
 
 Make sure to change the I2C address based on the list of subsystem addresses below.
 
+Install Arduino Json https://arduinojson.org/v6/doc/installation/
+
 ### Adddresses
 
- * MAIN : 1
+ * BROADCASTER : 1
  * LIGHTS : 2
  * TEA : 3
  * WIND : 4
@@ -57,18 +59,18 @@ The lights are controlled via PWM from the Arduino. There are no sensors. Prepro
 
 ## Communication Protocol & Serial String Structure
 
-### From TS to Arduino 
-The TS sends all data to the Arduino network as a JSON dictionary in the following format.
+### From TS to Arduino
+The TS sends all data to the Arduino network as a JSON dictionary in the following format. Regardless of what subsystem info is include, all data is broadcast to the entire network. This can be changed in the future if it leads to problems.
+
+`{ lights : [int 0-255]}`
+
+or for multiple values: 
 
 `{ lights : [int 0-255], tea: [int 0-255],hum:[int 0-255],wind:[int 0-255]}`
 
-In repeate mode, the main Arduino just sends it along.
-
-In parse mode, the main Arduino parses the incoming message and only sends it along to the appropriate device
-
 ### From Arduino to TS
 
-Because exact sensor data that would get sent from subsystems to TS for archiving isn't available yet, that specific format isn't finalized, but it will probably follow a similar JSON format as above, except messages would be seperated out as individual subsystems like below.
+Because exact sensor data that would get sent from subsystems to TS for archiving isn't available yet, that specific format isn't finalized, but it will probably follow a similar JSON format as above, except messages would be seperated out as individual subsystems like the below theoretical example with 3 different temperature sensors. As with communication in the other direction, it is best to reduce the dimension of data if possible. So in this example, unless you need to archive all 3 pieces of data it would be best to just send an average.
 
 `{ tea: {temp1: [int 0-255], temp2: [int 0-255], temp3: [int 0-255]}`
 
@@ -90,3 +92,5 @@ In the Arduino IDE, open a console and any incoming messages from I2C should pri
 ## Future Work
 
 This should be a library
+
+Ultimately, it will be best to have 1 library that encompasses all network functions and subsystem functions so that each Arduino can have identical software running.
