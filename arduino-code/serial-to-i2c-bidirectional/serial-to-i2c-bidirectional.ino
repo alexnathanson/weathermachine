@@ -10,7 +10,7 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 
-const int ledPin = LED_BUILTIN;
+const int ledPin = 9;
 
 byte i2cDevices[128];
 int nDevices = 0;

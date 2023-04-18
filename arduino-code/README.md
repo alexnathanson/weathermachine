@@ -121,6 +121,4 @@ In the Arduino IDE, open a console and any incoming messages from I2C should pri
 
 ## Future Work
 
-This should be a library
-
-Ultimately, it will be best to have 1 library that encompasses all network functions and subsystem functions so that each Arduino can have identical software running.
+It might be best to have 1 library that encompasses all network functions and subsystem functions so that each Arduino can have identical software running.
