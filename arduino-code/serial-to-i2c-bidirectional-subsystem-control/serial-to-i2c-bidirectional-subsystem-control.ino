@@ -1,3 +1,11 @@
+/*This code manages communications between and control of all subsystems.
+ * This is the only Arduino code necessary. Change the subsystem variable to the correct value
+ * and it will automatically parse messages and run the correct code for the specified subsystem
+ * 
+ *For more info see the README at:
+ *https://github.com/alexnathanson/weathermachine/tree/main/arduino-code 
+ */
+
 /*
  * I2C Addresses:
  * BROADCASTER : 1
@@ -18,6 +26,7 @@ const int subsystem = 5;
 
 /*** LIGHT VARIABLES ***/
 const int ledPin = 9;
+int ledBrightness = 0;
 
 /*** TEA VARIABLES ***/
 
@@ -87,10 +96,28 @@ void loop() {
       
     }
   }
-
-  if(subsystem == 5){
+  
+  if(subsystem == 2){
+    lightLoop();
+  } else if(subsystem == 3){
+    teaLoop();
+  } else if(subsystem == 4){
+    windLoop();
+  }else if(subsystem == 5){
     humidityLoop();
   }
+}
+
+void lightLoop(){
+  analogWrite(ledPin, ledBrightness);
+}
+
+void teaLoop(){
+  
+}
+
+void windLoop(){
+  
 }
 
 /* Code for humidity subsystem*/
@@ -159,24 +186,25 @@ void receiveEvent(int howMany) {
   Wire.write("hello "); // respond with message of 6 bytes
 }*/
 
-void runLights(int brightness){
+void setLights(int brightness){
   Serial.print("Running Lights: ");
   Serial.println(brightness);
+  ledBrightness = brightness;
   
-  if (brightness == 0){
+  /*if (brightness == 0){
     digitalWrite(ledPin, LOW);
   } else {
     digitalWrite(ledPin, HIGH);
-  }
+  }*/
 }
 
-void runTea(int temp){
+void setTea(int temp){
   Serial.print("Running TEA: ");
   Serial.println(temp);
   digitalWrite(ledPin, temp);
 }
 
-void runHumidity(float humidity){
+void setHumidity(float humidity){
   Serial.print("Running Humidity: ");
   Serial.println(humidity);
   digitalWrite(ledPin, humidity);
@@ -184,7 +212,7 @@ void runHumidity(float humidity){
   RHValue = humidity;     // Defining the humidity set point in percentage converted to float
 }
 
-void runWind(int wind){
+void setWind(int wind){
   Serial.print("Running Wind: ");
   Serial.println(wind);
   digitalWrite(ledPin, wind);
@@ -291,19 +319,19 @@ void broadcastI2C(String m){
     } else if(subsystem == 2){
       //check if data is meant for this particular subsystem
       if (!doc["lights"].isNull()) {
-        runLights(doc["lights"]);
+        setLights(doc["lights"]);
       }
     } else if (subsystem == 3){
       if (!doc["tea"].isNull()) {
-        runTea(doc["tea"]);
+        setTea(doc["tea"]);
       }
     } else if (subsystem == 4){
       if (!doc["wind"].isNull()) {
-        runWind(doc["wind"]);
+        setWind(doc["wind"]);
       }
     } else if (subsystem == 5){
       if (!doc["hum"].isNull()) {
-        runHumidity(doc["hum"]);
+        setHumidity(doc["hum"]);
       }
     }
 

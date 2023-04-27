@@ -4,13 +4,13 @@ This system is composed of 5 Arduinos and a computer that acts as the test runne
 
 The test runner is a Python program. It sends commands via Serial. 1 Arduino receives this serial data and passes it on to all the other Arduinos that run individual subsystems via I2C. The system is intended to be modular, to enable the system to run with any amount of subsystems connected and so development work can happen more easily.
 
-Some of the individual subsystems have sensors. In some cases these sensors are just used for control feedback to maintain a certain output level, but in some cases sensor data may need to be logged. For this reason, communication in the system is bidirectional. All subsystem Arduinos can pass data back to the TR via sending it over I2C to the broadcaster Arduino, which converts it in to Serial to send to the TR. (Currently, the TR is not set up to archive this data, though that functionality could easily be added in the future.)
+Some of the individual subsystems have sensors. In some cases these sensors are just used for control feedback to maintain a certain output level, but in some cases sensor data may need to be logged. For this reason, communication in the system is bidirectional. All subsystem Arduinos can pass data back to the TR via sending it over I2C to the broadcaster Arduino, which converts it in to Serial to send to the TR.
 
 The TR determines what commands to send to the subsystems based on user defined test parameters (see the main README.md file for more info). The data originates from an EPW file. In order to simplify comunication and computational load on the Arduinos, the least amount and smallest dimension of data is sent to the Arduinos as possible. Some of subsystem data requires preprocessing that happens on the TR either before the test or on the fly at runtime. In some cases, the Arduino does handle a small amount of preprocessing.
 
-Currently, the only subsystem code included is for the lights. More complex subsystem code should probably be a FROG specific library.
+The only piece of code necessary is the serial-to-i2c-bidirectional-subsystem-control.ino script. Change the subsystem variable to the correct number and the Arduino will automatically parse messages and run the correct subsystem. (Currently, the only subsystem code included is for the lights and humidity systems.)
 
-## Installation of serial-to-i2c-bidirectional.ino
+## Installation of serial-to-i2c-bidirectional-subsystem-control.ino
 
 ### Software
 
